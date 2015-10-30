@@ -4,6 +4,8 @@
  */
 package edu.buffalo.itembench.workloads;
 
+import java.sql.Connection;
+
 /**
  * @author pketki
  *
@@ -27,13 +29,13 @@ public class ReadOnlyWorkload extends Workload {
 	}
 
 	@Override
-	public void init() {
+	public void init(Connection dbConn) {
 		// TODO: Create table & insert/import rows
 
 	}
 
 	@Override
-	public void run() {
+	public void run(Connection dbConn) {
 		// TODO: Fire Select queries at particular intervals
 
 	}

@@ -3,6 +3,8 @@
  */
 package edu.buffalo.itembench.workloads;
 
+import java.sql.Connection;
+
 /**
  * @author jlimaye
  * 
@@ -52,7 +54,7 @@ public abstract class Workload {
 		this.updateLoad = updateLoad;
 	}
 
-	public abstract void init();
+	public abstract void init(Connection dbConn);
 
-	public abstract void run();
+	public abstract void run(Connection dbConn);
 }
