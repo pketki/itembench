@@ -12,23 +12,12 @@ public class DbException extends Exception {
 	/**
 	 * 
 	 */
+	private static final long serialVersionUID = -5888022122283090375L;
+
+	/**
+	 * 
+	 */
 	public DbException() {
-		// TODO Auto-generated constructor stub
-	}
-
-	/**
-	 * @param arg0
-	 */
-	public DbException(String arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
-	}
-
-	/**
-	 * @param arg0
-	 */
-	public DbException(Throwable arg0) {
-		super(arg0);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -38,18 +27,8 @@ public class DbException extends Exception {
 	 */
 	public DbException(String arg0, Throwable arg1) {
 		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
-	}
-
-	/**
-	 * @param arg0
-	 * @param arg1
-	 * @param arg2
-	 * @param arg3
-	 */
-	public DbException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
-		super(arg0, arg1, arg2, arg3);
-		// TODO Auto-generated constructor stub
+		System.out.println(arg0);
+		arg1.printStackTrace();
 	}
 
 }

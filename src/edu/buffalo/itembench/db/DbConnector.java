@@ -14,7 +14,7 @@ import java.util.Properties;
  * @author pketki
  * 
  */
-public class DatabaseConnector {
+public class DbConnector {
 
 	private String driver;
 	private String connectionURL;
@@ -23,7 +23,7 @@ public class DatabaseConnector {
 	private String dbName;
 	private Connection connection;
 
-	public DatabaseConnector(Properties props) {
+	public DbConnector(Properties props) {
 		super();
 		driver = props.getProperty("driver");
 		connectionURL = props.getProperty("url");
@@ -38,9 +38,9 @@ public class DatabaseConnector {
 			connection = DriverManager.getConnection(connectionURL + dbName,
 					user, password);
 		} catch (ClassNotFoundException e) {
-			throw new DbException("Incorrect Database Driver");
+			throw new DbException("Incorrect Database Driver", e);
 		} catch (SQLException e) {
-			throw new DbException("Unable to connect to DB");
+			throw new DbException("Unable to connect to DB", e);
 		}
 
 		return connection;
@@ -53,7 +53,7 @@ public class DatabaseConnector {
 			PreparedStatement statement = connection.prepareStatement(query);
 			resultSet = statement.executeQuery();
 		} catch (SQLException e) {
-			throw new DbException("Invalid query or unable to connect to DB");
+			throw new DbException("Invalid query or unable to connect to DB", e);
 		}
 		return resultSet;
 	}
@@ -62,7 +62,7 @@ public class DatabaseConnector {
 		try {
 			connection.close();
 		} catch (SQLException e) {
-			throw new DbException("Unable to close connection");
+			throw new DbException("Unable to close connection", e);
 		}
 		connection = null;
 	}
