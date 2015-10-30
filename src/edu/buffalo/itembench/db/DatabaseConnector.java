@@ -7,7 +7,7 @@ package edu.buffalo.itembench.db;
  * @author jlimaye
  * 
  */
-public abstract class DatabaseConnector {
+public class DatabaseConnector {
 
 	private String name;
 	private String user;
@@ -25,10 +25,10 @@ public abstract class DatabaseConnector {
 		this.password = password;
 	}
 
-	public abstract Object getConnection();
+	public Object getConnection(){return null;}
 
-	public abstract boolean query(Object query);
+	public boolean query(Object query){return false;}
 
-	public abstract void closeConnection();
+	public void closeConnection(){}
 
 }
