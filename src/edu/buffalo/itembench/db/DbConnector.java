@@ -3,6 +3,9 @@
  */
 package edu.buffalo.itembench.db;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -22,14 +25,33 @@ public class DbConnector {
 	private String password;
 	private String dbName;
 	private Connection connection;
+        private final String RESOURCE="resources/database.properties";
+        
 
-	public DbConnector(Properties props) {
+	public DbConnector(String driver,String url,String dbName) {
 		super();
-		driver = props.getProperty("driver");
-		connectionURL = props.getProperty("url");
-		user = props.getProperty("user");
-		password = props.getProperty("password");
-		dbName = props.getProperty("dbName");
+                Properties props=new Properties();
+                
+                InputStream is = null;
+ 
+                // First try loading from the current directory
+                try {
+                    File f = new File(RESOURCE);
+                    is = new FileInputStream( f );
+                    props.load( is );
+                }
+                catch ( Exception e ) { 
+                    is = null; 
+                    System.out.println("Exception "+e);
+                }
+                
+                //Get properties from file
+		this.driver = props.getProperty(driver);
+		this.connectionURL = props.getProperty(url);
+		this.dbName = props.getProperty(dbName);
+                this.user = props.getProperty("user");
+		this.password = props.getProperty("password");
+		
 	}
 
 	public Connection getConnection() throws DbException {
@@ -42,7 +64,8 @@ public class DbConnector {
 		} catch (SQLException e) {
 			throw new DbException("Unable to connect to DB", e);
 		}
-
+                
+                System.out.println("Opened database successfully");
 		return connection;
 	}
 
@@ -64,6 +87,7 @@ public class DbConnector {
 		} catch (SQLException e) {
 			throw new DbException("Unable to close connection", e);
 		}
+                System.out.println("Connection closed!");
 		connection = null;
 	}
 
