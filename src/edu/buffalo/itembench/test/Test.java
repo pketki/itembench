@@ -7,6 +7,7 @@ package edu.buffalo.itembench.test;
 
 import edu.buffalo.itembench.db.DbConnector;
 import edu.buffalo.itembench.db.DbException;
+import java.sql.Connection;
 import java.util.Scanner;
 
 /**
@@ -59,7 +60,7 @@ public class Test {
         
         //Open connection based on database
         try {
-            dbcon.getConnection();
+            Connection connection=dbcon.getConnection();
         } catch (DbException e) {
             System.out.println(e);
         }
@@ -83,11 +84,11 @@ public class Test {
                 switch(wrkld){
                     case 1:
                         //Call init method for workload A
-                        //Method (metrics,dbconn)
+                        //Method (metrics,connection)
                         break;
                     case 2:
                         //Call init method for workload A
-                        //Method (metrics,dbconn)
+                        //Method (metrics,connection)
                         break;
                     case 3:
                         System.out.println("Restarting!");
