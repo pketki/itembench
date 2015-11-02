@@ -92,6 +92,11 @@ public class Test {
                         break;
                     case 3:
                         System.out.println("Restarting!");
+                        //reset the metrics vector
+                        for(int i=0;i<metrics.length;i++){
+                            metrics[i]=0;
+                        }
+                        
                         //Close connection and return
                         try {
                             dbcon.closeConnection();
