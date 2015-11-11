@@ -3,7 +3,9 @@
  */
 package edu.buffalo.itembench.test;
 
+import java.io.IOException;
 import java.sql.Connection;
+import java.util.Date;
 
 import edu.buffalo.itembench.db.DbConnector;
 import edu.buffalo.itembench.db.DbException;
@@ -28,11 +30,18 @@ public class SimpleTest {
 		workload.init(connection);
 		dbConn.closeConnection();
 
-		// TODO: start measuring time
+		// TODO: start measuring metrics
+		Long start = new Date().getTime();
 		connection = dbConn.getConnection();
-		workload.run(connection);
-		dbConn.closeConnection();
-		// TODO: stop measuring time
+		try {
+			workload.run(connection);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			dbConn.closeConnection();
+			System.out.println(new Date().getTime() - start);
+		}
+		// TODO: stop measuring metrics
 	}
 
 }

@@ -3,7 +3,11 @@
  */
 package edu.buffalo.itembench.workloads;
 
+import java.io.IOException;
 import java.sql.Connection;
+import java.util.Map;
+
+import edu.buffalo.itembench.db.ColumnDescriptor;
 
 /**
  * @author jlimaye
@@ -12,22 +16,12 @@ import java.sql.Connection;
 public abstract class Workload {
 	private int readLoad;
 	private int writeLoad;
-	private int updateLoad;
+	protected Map<String, ColumnDescriptor> schema;
+
+	// private int updateLoad;
 
 	public Workload() {
 		super();
-	}
-
-	/**
-	 * @param readLoad
-	 * @param writeLoad
-	 * @param updateLoad
-	 */
-	public Workload(int readLoad, int writeLoad, int updateLoad) {
-		this();
-		this.setReadLoad(readLoad);
-		this.setWriteLoad(writeLoad);
-		this.setUpdateLoad(updateLoad);
 	}
 
 	public int getReadLoad() {
@@ -46,15 +40,15 @@ public abstract class Workload {
 		this.writeLoad = writeLoad;
 	}
 
-	public int getUpdateLoad() {
-		return updateLoad;
-	}
-
-	public void setUpdateLoad(int updateLoad) {
-		this.updateLoad = updateLoad;
-	}
+	// public int getUpdateLoad() {
+	// return updateLoad;
+	// }
+	//
+	// public void setUpdateLoad(int updateLoad) {
+	// this.updateLoad = updateLoad;
+	// }
 
 	public abstract void init(Connection dbConn);
 
-	public abstract void run(Connection dbConn);
+	public abstract void run(Connection dbConn) throws IOException;
 }
