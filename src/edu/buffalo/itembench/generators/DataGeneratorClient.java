@@ -1,34 +1,42 @@
-package edu.buffalo.itembench.generators.DataGenerator;
+package edu.buffalo.itembench.generators;
 
-import edu.buffalo.itembench.generators.Generator;
-import edu.buffalo.itembench.generators.ValueGenerator;
-import edu.buffalo.itembench.util.DataType;
+import edu.buffalo.itembench.db.ColumnDescriptor;
+import edu.buffalo.itembench.generators.DataGen.Distribution;
+import edu.buffalo.itembench.generators.DataGen.GeneratorFactory;
+import edu.buffalo.itembench.generators.DataGen.InvalidDistribution;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Created by abhinit on 11/3/15.
  */
-public class DataGeneratorClient implements ValueGenerator{
-    private ArrayList<Generator> generatorList = null;
-    private int tupleSize = 10;
-    private Distribution distribution = null;
-    private Map<String,DataType> schema = null;
+public class DataGeneratorClient{
+    private static final DataGeneratorClient instance = new DataGeneratorClient();
     private GeneratorFactory generatorFactory = GeneratorFactory.getInstance();
 
+    private Map<String, ColumnDescriptor> schema;
+    private ArrayList<Generator> generatorList = new ArrayList<>();
+    private int tupleSize = 10;
+    private Distribution distribution = null;
+    private List<String> stringPool;
 
-    public DataGeneratorClient(){
-        this.generatorList = new ArrayList<>();
+    private DataGeneratorClient(){}
 
+    public static DataGeneratorClient getInstance(){
+        return instance;
     }
 
 
-    @Override
-    public void setSchema(Map<String, DataType> schema) {
+    public void setSchema(Map<String, ColumnDescriptor> schema) {
         this.schema = schema;
+        try {
+            stringPool = Files.readAllLines(Paths.get("resources/generic.txt"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**********************************
@@ -41,7 +49,7 @@ public class DataGeneratorClient implements ValueGenerator{
 
     }
 
-    public void setDefaultEnv() throws InvalidDistribution{
+    public void setDefaultEnv() throws InvalidDistribution {
         distribution = Distribution.Zipfian;
         setTupleSize(this.tupleSize);
     }
@@ -54,16 +62,17 @@ public class DataGeneratorClient implements ValueGenerator{
 
     private void initGenerators() throws InvalidDistribution{
         Generator generator = null;
+        ColumnDescriptor descriptor = null;
+
         for(int index=0;index<this.tupleSize;index++){
             generator = generatorFactory.getGenerator(distribution);
             generatorList.add(generator);
         }
     }
 
-    @Override
-    public List<String> getRow() {
+    public List<Object> getRow() {
 
-        List<String> tupleList = new ArrayList<>();
+        List<Object> tupleList = new ArrayList<>();
 
         int index = 0;
 
@@ -81,9 +90,9 @@ public class DataGeneratorClient implements ValueGenerator{
         DataGeneratorClient client  = new DataGeneratorClient();
         try {
             client.setDefaultEnv();
-            List<String> tupleList = client.getRow();
+            List<Object> tupleList = client.getRow();
 
-            for(String elem : tupleList){
+            for(Object elem : tupleList){
                 System.out.println(elem);
             }
 

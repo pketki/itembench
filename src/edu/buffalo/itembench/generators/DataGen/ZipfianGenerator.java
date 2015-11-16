@@ -1,5 +1,4 @@
-package edu.buffalo.itembench.generators.DataGenerator;
-
+package edu.buffalo.itembench.generators.DataGen;
 import edu.buffalo.itembench.generators.IntegerGenerator;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 import org.apache.commons.math3.random.MersenneTwister;

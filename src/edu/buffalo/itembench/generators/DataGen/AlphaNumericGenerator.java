@@ -1,4 +1,4 @@
-package edu.buffalo.itembench.generators.DataGenerator;
+package edu.buffalo.itembench.generators.DataGen;
 
 import edu.buffalo.itembench.generators.Generator;
 import org.apache.commons.lang3.RandomStringUtils;

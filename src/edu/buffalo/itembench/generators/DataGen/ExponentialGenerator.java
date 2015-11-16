@@ -1,4 +1,4 @@
-package edu.buffalo.itembench.generators.DataGenerator;
+package edu.buffalo.itembench.generators.DataGen;
 
 import edu.buffalo.itembench.generators.DecimalValueGenerator;
 import org.apache.commons.math3.distribution.ExponentialDistribution;

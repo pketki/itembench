@@ -1,4 +1,4 @@
-package edu.buffalo.itembench.generators.DataGenerator;
+package edu.buffalo.itembench.generators.DataGen;
 
 /**
  * Created by abhinit on 11/3/15.
