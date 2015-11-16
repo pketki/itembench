@@ -1,16 +1,23 @@
 package edu.buffalo.itembench.generators.DataGenerator;
 
+import edu.buffalo.itembench.generators.Generator;
+import edu.buffalo.itembench.generators.ValueGenerator;
+import edu.buffalo.itembench.util.DataType;
+
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
  * Created by abhinit on 11/3/15.
  */
-public class DataGeneratorClient {
+public class DataGeneratorClient implements ValueGenerator{
     private ArrayList<Generator> generatorList = null;
     private int tupleSize = 10;
     private Distribution distribution = null;
-
+    private Map<String,DataType> schema = null;
+    private GeneratorFactory generatorFactory = GeneratorFactory.getInstance();
 
 
     public DataGeneratorClient(){
@@ -18,12 +25,18 @@ public class DataGeneratorClient {
 
     }
 
+
+    @Override
+    public void setSchema(Map<String, DataType> schema) {
+        this.schema = schema;
+    }
+
     /**********************************
      Properties consist of parameters:
      * type of distribution
      * Number of samples
      * Tuple Size
-    ***********************************/
+     ***********************************/
     public void setEnv(Properties properties){
 
     }
@@ -42,43 +55,35 @@ public class DataGeneratorClient {
     private void initGenerators() throws InvalidDistribution{
         Generator generator = null;
         for(int index=0;index<this.tupleSize;index++){
-            generator = new Generator();
-            generator.setGenerator(distribution);
+            generator = generatorFactory.getGenerator(distribution);
             generatorList.add(generator);
         }
     }
 
-    public int[] getZipfianTuple(){
-        int[] tuple = new int[this.tupleSize];
+    @Override
+    public List<String> getRow() {
+
+        List<String> tupleList = new ArrayList<>();
+
         int index = 0;
 
         for(Generator generator : generatorList){
-            tuple[index] = generator.generateZipfian();
+            tupleList.add(generator.getNextString());
             index++;
         }
 
-        return tuple;
+        return tupleList;
     }
 
-    public double[] getTuple(){
-        double[] tuple = new double[this.tupleSize];
-        int index = 0;
 
-        for(Generator generator : generatorList){
-            tuple[index] = generator.generateNumeric();
-            index++;
-        }
-
-        return tuple;
-    }
 
     public static void main(String[] args){
         DataGeneratorClient client  = new DataGeneratorClient();
         try {
             client.setDefaultEnv();
-            int[] tuple = client.getZipfianTuple();
+            List<String> tupleList = client.getRow();
 
-            for(int elem : tuple){
+            for(String elem : tupleList){
                 System.out.println(elem);
             }
 
