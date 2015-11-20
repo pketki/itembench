@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.buffalo.itembench.generators;
+package edu.buffalo.itembench.generators.client;
 
 import java.io.IOException;
 import java.nio.file.Files;

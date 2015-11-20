@@ -17,7 +17,7 @@ import java.util.Map.Entry;
 import javax.naming.OperationNotSupportedException;
 
 import edu.buffalo.itembench.db.ColumnDescriptor;
-import edu.buffalo.itembench.generators.DataGenerator;
+import edu.buffalo.itembench.generators.client.DataGenerator;
 import edu.buffalo.itembench.util.DataType;
 
 /**
