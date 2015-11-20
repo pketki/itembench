@@ -110,4 +110,11 @@ public class RFIDWorkload extends Workload {
 			e.printStackTrace();
 		}
 	}
+
+	private void readQuery() {
+		query = "SELECT COUNT(TAG_ID), TRACK "
+				+ "FROM POSITION_SNAPSHOT P, TALK_LIST L, TALKS T "
+				+ "WHERE P.TAG_ID = L.HACKER_ID AND "
+				+ "L.TALK_ID = T.TALK_ID GROUP BY TRACK;";
+	}
 }
