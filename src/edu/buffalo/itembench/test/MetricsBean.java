@@ -12,7 +12,7 @@ public class MetricsBean {
 	private Float throughput;
 	private Float latency;
 	private Double cpuUsage;
-	private Double memoryUsage;
+	private Long memoryUsage;
 
 	public Float getRunTime() {
 		return runTime;
@@ -46,12 +46,21 @@ public class MetricsBean {
 		this.cpuUsage = cpuUsage;
 	}
 
-	public Double getMemoryUsage() {
+	public Long getMemoryUsage() {
 		return memoryUsage;
 	}
 
-	public void setMemoryUsage(Double memoryUsage) {
+	public void setMemoryUsage(Long memoryUsage) {
 		this.memoryUsage = memoryUsage;
 	}
+
+	@Override
+	public String toString() {
+		return "MetricsBean [Average runTime(ms)=" + runTime + ", throughput=" + throughput
+				+ ", Average Latency=" + latency + ", Cpu Usage=" + cpuUsage
+				+ "%, Memory Usage(kb)=" + memoryUsage + "]";
+	}
+	
+	
 
 }
