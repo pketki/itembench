@@ -2,7 +2,7 @@
  * Workload to emulate read-only applications 
  * like an authenticating RFID or local cache 
  */
-package edu.buffalo.itembench.workloads;
+package edu.buffalo.itembench.workloads.rfid;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -17,14 +17,17 @@ import java.util.Map.Entry;
 import javax.naming.OperationNotSupportedException;
 
 import edu.buffalo.itembench.db.ColumnDescriptor;
+import edu.buffalo.itembench.generators.Distribution;
+import edu.buffalo.itembench.generators.InvalidDistribution;
 import edu.buffalo.itembench.generators.client.DataGenerator;
 import edu.buffalo.itembench.util.DataType;
+import edu.buffalo.itembench.workloads.Workload;
 
 /**
  * @author pketki
  *
  */
-public class RFIDWorkload extends Workload {
+public class WriteOnlyWorkload extends Workload {
 
 	private String load;
 	private String query;
@@ -33,16 +36,16 @@ public class RFIDWorkload extends Workload {
 	/**
 	 * 
 	 */
-	public RFIDWorkload() {
+	public WriteOnlyWorkload() {
 		this.setReadLoad(10);
 		this.setWriteLoad(90);
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.DATETIME, false,
-				null, null, null));
+				null, null, null, Distribution.Series));
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.NUMBER, false, 3000,
-				6500, null));
+				6500, null, Distribution.Random));
 		schema.put("AREA_ID", new ColumnDescriptor(DataType.TEXT, false, null,
-				null, "resources/areas.txt"));
+				null, "resources/areas.txt", Distribution.Random));
 	}
 
 	/**
@@ -50,7 +53,7 @@ public class RFIDWorkload extends Workload {
 	 * @param writeLoad
 	 * @param updateLoad
 	 */
-	public RFIDWorkload(int readLoad, int writeLoad, int updateLoad) {
+	public WriteOnlyWorkload(int readLoad, int writeLoad, int updateLoad) {
 		this();
 	}
 
@@ -76,10 +79,10 @@ public class RFIDWorkload extends Workload {
 	public void run(Connection dbConn) throws IOException {
 		connection = dbConn;
 		loadData();
-		loadData();
-		loadData();
-		loadData();
-		loadData();
+		// loadData();
+		// loadData();
+		// loadData();
+		// loadData();
 	}
 
 	private void loadData() throws IOException {
@@ -90,8 +93,8 @@ public class RFIDWorkload extends Workload {
 			DataGenerator generator = new DataGenerator();
 			generator.setSchema(schema);
 			List<Object> row;
-			int insertLimit = getWriteLoad() * 10;
-			setTotalOps(getTotalOps()+ insertLimit);
+			int insertLimit = getWriteLoad() * 300;
+			setTotalOps(getTotalOps() + insertLimit);
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
 				int idx = 1;
@@ -108,6 +111,8 @@ public class RFIDWorkload extends Workload {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} catch (OperationNotSupportedException e) {
+			e.printStackTrace();
+		} catch (InvalidDistribution e) {
 			e.printStackTrace();
 		}
 	}

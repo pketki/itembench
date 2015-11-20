@@ -4,8 +4,6 @@
 package edu.buffalo.itembench.generators.client;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,7 +12,12 @@ import java.util.Map.Entry;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.apache.commons.lang3.time.DateUtils;
+
 import edu.buffalo.itembench.db.ColumnDescriptor;
+import edu.buffalo.itembench.generators.Generator;
+import edu.buffalo.itembench.generators.GeneratorFactory;
+import edu.buffalo.itembench.generators.InvalidDistribution;
 
 /**
  * @author pketki
@@ -22,22 +25,16 @@ import edu.buffalo.itembench.db.ColumnDescriptor;
  */
 public class DataGenerator {
 	private Map<String, ColumnDescriptor> schema;
-	private int number = 0;
-	private int rangeStart = 0;
-	private int rangeEnd = 10000;
-	private List<String> stringPool;
+	private Generator numberGenerator;
+	private Generator stringGenerator;
+	private Generator dateGenerator;
 
 	public void setSchema(Map<String, ColumnDescriptor> schema) {
 		this.schema = schema;
-		try {
-			stringPool = Files.readAllLines(Paths.get("resources/generic.txt"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public List<Object> getRow() throws OperationNotSupportedException,
-			IOException {
+			IOException, InvalidDistribution {
 		List<Object> row = new ArrayList<Object>();
 		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
 			ColumnDescriptor value = column.getValue();
@@ -45,52 +42,36 @@ public class DataGenerator {
 			case BLOB:
 				throw new OperationNotSupportedException();
 			case DATETIME:
-				Long now = new Date().getTime();
+				if (dateGenerator == null)
+					dateGenerator = GeneratorFactory.getInstance()
+							.getGenerator(value.getDistribution());
+				Long now = dateGenerator.getNextDate(new Date(),
+						DateUtils.addDays(new Date(), -2), 1).getTime();
 				row.add(new java.sql.Date(now));
 				break;
 			case NUMBER:
+				if (numberGenerator == null)
+					numberGenerator = GeneratorFactory.getInstance()
+							.getGenerator(value.getDistribution());
 				if (value.getMin() != null)
-					rangeStart = value.getMin();
-				row.add(generateNumber(value));
+					row.add(numberGenerator.getNextInt(value.getMin(),
+							value.getMax()));
+				else
+					row.add(numberGenerator.getNextInt());
 				break;
 			case TEXT:
-				row.add(generateString(value));
+				if (stringGenerator == null)
+					stringGenerator = GeneratorFactory.getInstance()
+							.getGenerator(value.getDistribution());
+				if (value.getValuePool() == null)
+					row.add(stringGenerator.getNextString(25));
+				else
+					row.add(stringGenerator.getNextString(value.getValuePool()));
 				break;
 			default:
 				throw new OperationNotSupportedException();
 			}
 		}
 		return row;
-	}
-
-	private int getRandomNumber(int min, int max) {
-		return min + (int) (Math.random() * ((max - min) + 1));
-	}
-
-	private int generateNumber(ColumnDescriptor column) {
-		int num = 0, min, max;
-		min = column.getMin() == null ? rangeStart : column.getMin();
-		max = column.getMin() == null ? rangeEnd : column.getMin();
-		if (column.isUnique())
-			num = min + number++;
-		else
-			num = getRandomNumber(min, max);
-		return num;
-	}
-
-	private String generateString(ColumnDescriptor column) throws IOException {
-		String str = null;
-		if (column.isUnique()) {
-			str = "STR_" + number;
-		} else {
-			List<String> pool = null;
-			if (column.getValuePool() != null) {
-				pool = Files.readAllLines(Paths.get(column.getValuePool()));
-			} else {
-				pool = stringPool;
-			}
-			str = pool.get(getRandomNumber(0, pool.size() - 1));
-		}
-		return str;
 	}
 }
