@@ -91,6 +91,7 @@ public class RFIDWorkload extends Workload {
 			generator.setSchema(schema);
 			List<Object> row;
 			int insertLimit = getWriteLoad() * 10;
+			setTotalOps(getTotalOps()+ insertLimit);
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
 				int idx = 1;
