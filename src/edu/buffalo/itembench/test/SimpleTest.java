@@ -72,6 +72,10 @@ public class SimpleTest {
 			metrics.setThroughput(workload.getTotalOps()*1000/metrics.getRunTime());
 			metrics.setCpuUsage(nw.getPercent()*100/cpuCount);
 			metrics.setMemoryUsage(newMem - oldMem);
+			
+			connection = dbConn.getConnection();
+			workload.close(connection);
+			dbConn.closeConnection();
 		}		
 	}
 

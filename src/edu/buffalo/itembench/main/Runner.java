@@ -25,11 +25,11 @@ public class Runner {
 			dbConn = new DbConnector();
 			SimpleTest test = new SimpleTest(dbConn);
 			Workload workload = new WriteOnlyWorkload();
-			// for (int i = 0; i < 3; i++) {
-			//	}
-			test.run(workload);
-			MetricsBean metrics = test.getMetrics();
-			System.out.println(metrics.toString());
+			 for (int i = 0; i < 3; i++) {
+				test.run(workload);
+				MetricsBean metrics = test.getMetrics();
+				System.out.println(metrics.toString());
+			 }
 			//TODO: write metrics to file
 		} catch (DbException e) {
 			e.printStackTrace();

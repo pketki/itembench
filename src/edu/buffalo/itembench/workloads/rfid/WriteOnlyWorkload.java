@@ -84,10 +84,10 @@ public class WriteOnlyWorkload extends Workload {
 	public void run(Connection dbConn) throws IOException {
 		connection = dbConn;
 		loadData();
-		// loadData();
-		// loadData();
-		// loadData();
-		// loadData();
+		 loadData();
+		 loadData();
+		 loadData();
+		 loadData();
 	}
 
 	private void loadData() throws IOException {
@@ -127,5 +127,17 @@ public class WriteOnlyWorkload extends Workload {
 				+ "FROM POSITION_SNAPSHOT P, TALK_LIST L, TALKS T "
 				+ "WHERE P.TAG_ID = L.HACKER_ID AND "
 				+ "L.TALK_ID = T.TALK_ID GROUP BY TRACK;";
+	}
+
+	@Override
+	public void close(Connection dbConn) {
+		connection = dbConn;
+		load = "DROP TABLE POSITION_SNAPSHOT";
+		try {
+			Statement statement = dbConn.createStatement();
+			statement.execute(load);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}		
 	}
 }
