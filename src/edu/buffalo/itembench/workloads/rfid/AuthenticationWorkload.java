@@ -184,4 +184,10 @@ public class AuthenticationWorkload extends Workload {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public void close(Connection dbConn) {
+		// TODO Auto-generated method stub
+		
+	}
 }

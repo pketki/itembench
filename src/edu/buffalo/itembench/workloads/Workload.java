@@ -60,4 +60,6 @@ public abstract class Workload {
 	public abstract void init(Connection dbConn);
 
 	public abstract void run(Connection dbConn) throws IOException;
+	
+	public abstract void close(Connection dbConn);
 }
