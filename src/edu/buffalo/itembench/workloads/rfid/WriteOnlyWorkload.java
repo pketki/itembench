@@ -37,8 +37,7 @@ public class WriteOnlyWorkload extends Workload {
 	 * 
 	 */
 	public WriteOnlyWorkload() {
-		this.setReadLoad(10);
-		this.setWriteLoad(90);
+		this.setWriteLoad(100);
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, null, Distribution.Series));

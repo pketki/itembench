@@ -8,6 +8,7 @@ import edu.buffalo.itembench.db.DbException;
 import edu.buffalo.itembench.test.MetricsBean;
 import edu.buffalo.itembench.test.SimpleTest;
 import edu.buffalo.itembench.workloads.Workload;
+import edu.buffalo.itembench.workloads.rfid.AuthenticationWorkload;
 import edu.buffalo.itembench.workloads.rfid.WriteOnlyWorkload;
 
 /**
@@ -31,6 +32,7 @@ public class Runner {
 				System.out.println(metrics.toString());
 			 }
 			//TODO: write metrics to file
+
 		} catch (DbException e) {
 			e.printStackTrace();
 		}
