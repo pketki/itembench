@@ -8,7 +8,7 @@ import edu.buffalo.itembench.db.DbException;
 import edu.buffalo.itembench.test.MetricsBean;
 import edu.buffalo.itembench.test.SimpleTest;
 import edu.buffalo.itembench.workloads.Workload;
-import edu.buffalo.itembench.workloads.rfid.WriteOnlyWorkload;
+import edu.buffalo.itembench.workloads.rfid.AuthenticationWorkload;
 
 /**
  * @author pketki
@@ -24,13 +24,13 @@ public class Runner {
 		try {
 			dbConn = new DbConnector();
 			SimpleTest test = new SimpleTest(dbConn);
-			Workload workload = new WriteOnlyWorkload();
+			Workload workload = new AuthenticationWorkload();
 			// for (int i = 0; i < 3; i++) {
-			//	}
+			// }
 			test.run(workload);
 			MetricsBean metrics = test.getMetrics();
 			System.out.println(metrics.toString());
-			//TODO: write metrics to file
+			// TODO: write metrics to file
 		} catch (DbException e) {
 			e.printStackTrace();
 		}
