@@ -16,11 +16,15 @@ import java.util.Map.Entry;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.hyperic.sigar.ProcCpu;
+import org.hyperic.sigar.SigarException;
+
 import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.Distribution;
 import edu.buffalo.itembench.generators.InvalidDistribution;
 import edu.buffalo.itembench.generators.client.DataGenerator;
 import edu.buffalo.itembench.util.DataType;
+import edu.buffalo.itembench.util.Helper;
 import edu.buffalo.itembench.workloads.Workload;
 
 /**
@@ -82,11 +86,23 @@ public class WriteOnlyWorkload extends Workload {
 	@Override
 	public void run(Connection dbConn) throws IOException {
 		connection = dbConn;
-		loadData();
-		 loadData();
-		 loadData();
-		 loadData();
-		 loadData();
+		setTotalOps(0);
+		for(int i=0;i<5;i++){
+			loadData();
+			try {
+				Helper.memList.add(Helper.sg.getMem().getUsed()/1024);
+				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
+				Helper.cpuList.add(nw.getPercent()*100/Helper.cpuCount);
+			} catch (SigarException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}
+		
+//		 loadData();
+//		 loadData();
+//		 loadData();
+//		 loadData();
 	}
 
 	private void loadData() throws IOException {
