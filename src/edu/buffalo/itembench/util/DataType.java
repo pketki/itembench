@@ -8,5 +8,5 @@ package edu.buffalo.itembench.util;
  *
  */
 public enum DataType {
-	NUMBER, TEXT, DATETIME, BLOB
+	NUMBER, TEXT, DATETIME, BLOB, VARCHAR, INT
 }

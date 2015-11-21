@@ -49,6 +49,7 @@ public class DataGenerator {
 						DateUtils.addDays(new Date(), -2), 1).getTime();
 				row.add(new java.sql.Date(now));
 				break;
+			case INT:
 			case NUMBER:
 				if (numberGenerator == null)
 					numberGenerator = GeneratorFactory.getInstance()
@@ -59,6 +60,7 @@ public class DataGenerator {
 				else
 					row.add(numberGenerator.getNextInt());
 				break;
+			case VARCHAR:
 			case TEXT:
 				if (stringGenerator == null)
 					stringGenerator = GeneratorFactory.getInstance()

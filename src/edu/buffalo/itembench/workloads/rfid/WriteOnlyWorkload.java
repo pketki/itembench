@@ -39,11 +39,11 @@ public class WriteOnlyWorkload extends Workload {
 	public WriteOnlyWorkload() {
 		this.setWriteLoad(100);
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
-		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.DATETIME, false,
+		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, null, Distribution.Series));
-		schema.put("TAG_ID", new ColumnDescriptor(DataType.NUMBER, false, 3000,
+		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Random));
-		schema.put("AREA_ID", new ColumnDescriptor(DataType.TEXT, false, null,
+		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false, null,
 				null, "resources/areas.txt", Distribution.Random));
 	}
 
@@ -61,7 +61,12 @@ public class WriteOnlyWorkload extends Workload {
 		connection = dbConn;
 		load = "CREATE TABLE POSITION_SNAPSHOT (";
 		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
-			load += column.getKey() + " " + column.getValue().getType() + ", ";
+			load += column.getKey() + " " + column.getValue().getType();
+			if(column.getValue().getType() == DataType.INT || column.getValue().getType() == DataType.NUMBER){
+				load += ", ";
+			} else {
+				load += "(255), ";
+			}
 		}
 		load = load.substring(0, load.lastIndexOf(','));
 		load += ")";
@@ -85,7 +90,7 @@ public class WriteOnlyWorkload extends Workload {
 	}
 
 	private void loadData() throws IOException {
-		query = "INSERT INTO POSITION_SNAPSHOT VALUES (?,?,?);";
+		query = "INSERT INTO POSITION_SNAPSHOT VALUES (?,?,?)";
 		try {
 			connection.setAutoCommit(false);
 			PreparedStatement statement = connection.prepareStatement(query);
