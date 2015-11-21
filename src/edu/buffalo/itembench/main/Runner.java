@@ -25,8 +25,9 @@ public class Runner {
 		try {
 			dbConn = new DbConnector();
 			SimpleTest test = new SimpleTest(dbConn);
-			Workload workload = new WriteOnlyWorkload();
-			 for (int i = 0; i < 6; i++) {
+//			Workload workload = new WriteOnlyWorkload();
+			Workload workload = new AuthenticationWorkload();
+			 for (int i = 0; i < 3; i++) {
 				test.run(workload);
 				MetricsBean metrics = test.getMetrics();
 				System.out.println(metrics.toString());

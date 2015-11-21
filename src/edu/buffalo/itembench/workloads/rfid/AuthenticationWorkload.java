@@ -47,7 +47,7 @@ public class AuthenticationWorkload extends Workload {
 	@Override
 	public void init(Connection dbConn) {
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
-		schema.put("TAG_ID", new ColumnDescriptor(DataType.NUMBER, false, 3000,
+		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Series));
 		String load = "CREATE TABLE VALID_TAGS (";
 		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
@@ -83,7 +83,7 @@ public class AuthenticationWorkload extends Workload {
 			query = "DELETE FROM VALID_TAGS WHERE TAG_ID = ?";
 			statement = dbConn.prepareStatement(query);
 			schema = new LinkedHashMap<String, ColumnDescriptor>();
-			schema.put("TAG_ID", new ColumnDescriptor(DataType.NUMBER, false,
+			schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false,
 					3000, 6500, null, Distribution.Random));
 			generator.setSchema(schema);
 			for (int i = 0; i < 10; i++) {
@@ -107,11 +107,11 @@ public class AuthenticationWorkload extends Workload {
 		}
 
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
-		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.DATETIME, false,
+		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, null, Distribution.Series));
-		schema.put("TAG_ID", new ColumnDescriptor(DataType.NUMBER, false, 3000,
+		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Random));
-		schema.put("AREA_ID", new ColumnDescriptor(DataType.TEXT, false, null,
+		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false, null,
 				null, "resources/areas.txt", Distribution.Random));
 
 		String load1 = "CREATE TABLE POSITION_SNAPSHOT (";
@@ -119,7 +119,7 @@ public class AuthenticationWorkload extends Workload {
 			load1 += column.getKey() + " " + column.getValue().getType() + ", ";
 		}
 		load1 = load1.substring(0, load1.lastIndexOf(','));
-		load1 += ");";
+		load1 += ")";
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(load1);
@@ -147,7 +147,7 @@ public class AuthenticationWorkload extends Workload {
 	}
 
 	private void writeData() {
-		String query = "INSERT INTO POSITION_SNAPSHOT VALUES (?,?,?);";
+		String query = "INSERT INTO POSITION_SNAPSHOT VALUES (?,?,?)";
 		try {
 			connection.setAutoCommit(false);
 			PreparedStatement statement = connection.prepareStatement(query);
@@ -185,7 +185,15 @@ public class AuthenticationWorkload extends Workload {
 
 	@Override
 	public void close(Connection dbConn) {
-		// TODO Auto-generated method stub
-		
+		connection = dbConn;
+		String query1 = "DROP TABLE POSITION_SNAPSHOT";
+		String query2 = "DROP TABLE VALID_TAGS";
+		try {
+			Statement statement = dbConn.createStatement();
+			statement.execute(query1);
+			statement.execute(query2);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}			
 	}
 }
