@@ -26,7 +26,7 @@ public class Runner {
 			dbConn = new DbConnector();
 			SimpleTest test = new SimpleTest(dbConn);
 			Workload workload = new WriteOnlyWorkload();
-			 for (int i = 0; i < 3; i++) {
+			 for (int i = 0; i < 6; i++) {
 				test.run(workload);
 				MetricsBean metrics = test.getMetrics();
 				System.out.println(metrics.toString());
