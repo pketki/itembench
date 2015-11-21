@@ -8,7 +8,7 @@ import edu.buffalo.itembench.db.DbException;
 import edu.buffalo.itembench.test.MetricsBean;
 import edu.buffalo.itembench.test.SimpleTest;
 import edu.buffalo.itembench.workloads.Workload;
-import edu.buffalo.itembench.workloads.RFIDWorkload;
+import edu.buffalo.itembench.workloads.rfid.WriteOnlyWorkload;
 
 /**
  * @author pketki
@@ -24,7 +24,7 @@ public class Runner {
 		try {
 			dbConn = new DbConnector();
 			SimpleTest test = new SimpleTest(dbConn);
-			Workload workload = new RFIDWorkload();
+			Workload workload = new WriteOnlyWorkload();
 			// for (int i = 0; i < 3; i++) {
 			//	}
 			test.run(workload);

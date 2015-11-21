@@ -3,11 +3,13 @@
  */
 package edu.buffalo.itembench.test;
 
+import java.io.Serializable;
+
 /**
  * @author pketki
  *
  */
-public class MetricsBean {
+public class MetricsBean implements Serializable {
 	private Float runTime;
 	private Float throughput;
 	private Float latency;
@@ -59,8 +61,7 @@ public class MetricsBean {
 		return "MetricsBean [Overall RunTime(ms)=" + runTime + ", Throughput=" + throughput
 				+ ", Average Latency(ms)=" + latency + ", Cpu Usage=" + cpuUsage
 				+ "%, Memory Usage(kb)=" + memoryUsage + "]";
+
 	}
-	
-	
 
 }
