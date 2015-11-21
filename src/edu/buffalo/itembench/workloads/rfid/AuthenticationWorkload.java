@@ -46,6 +46,7 @@ public class AuthenticationWorkload extends Workload {
 	 */
 	@Override
 	public void init(Connection dbConn) {
+		connection = dbConn;
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.NUMBER, false, 3000,
 				6500, null, Distribution.Series));
@@ -80,19 +81,17 @@ public class AuthenticationWorkload extends Workload {
 				statement.execute();
 			}
 			dbConn.commit();
+
 			query = "DELETE FROM VALID_TAGS WHERE TAG_ID = ?";
 			statement = dbConn.prepareStatement(query);
 			schema = new LinkedHashMap<String, ColumnDescriptor>();
 			schema.put("TAG_ID", new ColumnDescriptor(DataType.NUMBER, false,
 					3000, 6500, null, Distribution.Random));
+			generator = new DataGenerator();
 			generator.setSchema(schema);
 			for (int i = 0; i < 10; i++) {
 				row = generator.getRow();
-				int idx = 1;
-				for (Object value : row) {
-					statement.setObject(idx, value);
-					idx++;
-				}
+				statement.setObject(1, row.get(0));
 				statement.execute();
 			}
 			dbConn.commit();
@@ -105,7 +104,10 @@ public class AuthenticationWorkload extends Workload {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
 
+	@Override
+	public void run(Connection dbConn) throws IOException {
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.DATETIME, false,
 				null, null, null, Distribution.Series));
@@ -114,30 +116,30 @@ public class AuthenticationWorkload extends Workload {
 		schema.put("AREA_ID", new ColumnDescriptor(DataType.TEXT, false, null,
 				null, "resources/areas.txt", Distribution.Random));
 
-		String load1 = "CREATE TABLE POSITION_SNAPSHOT (";
+		String load1 = "CREATE TABLE POSITION_SNAPSHOT(";
 		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
 			load1 += column.getKey() + " " + column.getValue().getType() + ", ";
 		}
 		load1 = load1.substring(0, load1.lastIndexOf(','));
-		load1 += ");";
+		load1 += ")";
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(load1);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void run(Connection dbConn) throws IOException {
 		connection = dbConn;
+		writeData();
+		writeData();
+		writeData();
+		writeData();
 		writeData();
 	}
 
 	private boolean readData(Object id) {
 		String query = "SELECT TAG_ID FROM VALID_TAGS WHERE TAG_ID = " + id;
 		try {
-			Statement statement = connection.prepareStatement(query);
+			Statement statement = connection.createStatement();
 			ResultSet result = statement.executeQuery(query);
 			return (result.getFetchSize() != 0);
 		} catch (SQLException e) {
@@ -147,14 +149,14 @@ public class AuthenticationWorkload extends Workload {
 	}
 
 	private void writeData() {
-		String query = "INSERT INTO POSITION_SNAPSHOT VALUES (?,?,?);";
+		String query = "INSERT INTO POSITION_SNAPSHOT VALUES (?,?,?)";
 		try {
 			connection.setAutoCommit(false);
 			PreparedStatement statement = connection.prepareStatement(query);
 			DataGenerator generator = new DataGenerator();
 			generator.setSchema(schema);
 			List<Object> row;
-			int insertLimit = getWriteLoad() * 900;
+			int insertLimit = getWriteLoad() * 90;
 			setTotalOps(getTotalOps() + insertLimit);
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
