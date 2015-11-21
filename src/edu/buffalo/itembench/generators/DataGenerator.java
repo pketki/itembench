@@ -48,11 +48,13 @@ public class DataGenerator {
 				Long now = new Date().getTime();
 				row.add(new java.sql.Date(now));
 				break;
+			case INT:
 			case NUMBER:
 				if (value.getMin() != null)
 					rangeStart = value.getMin();
 				row.add(generateNumber(value));
 				break;
+			case VARCHAR:
 			case TEXT:
 				row.add(generateString(value));
 				break;

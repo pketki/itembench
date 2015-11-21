@@ -56,8 +56,8 @@ public class MetricsBean {
 
 	@Override
 	public String toString() {
-		return "MetricsBean [Average runTime(ms)=" + runTime + ", throughput=" + throughput
-				+ ", Average Latency=" + latency + ", Cpu Usage=" + cpuUsage
+		return "MetricsBean [Overall RunTime(ms)=" + runTime + ", Throughput=" + throughput
+				+ ", Average Latency(ms)=" + latency + ", Cpu Usage=" + cpuUsage
 				+ "%, Memory Usage(kb)=" + memoryUsage + "]";
 	}
 	
