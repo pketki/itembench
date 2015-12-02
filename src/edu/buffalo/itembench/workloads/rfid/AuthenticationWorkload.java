@@ -122,7 +122,12 @@ public class AuthenticationWorkload extends Workload {
 
 		String load1 = "CREATE TABLE POSITION_SNAPSHOT(";
 		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
-			load1 += column.getKey() + " " + column.getValue().getType() + ", ";
+			load1 += column.getKey() + " " + column.getValue().getType();
+			if(column.getValue().getType() == DataType.INT || column.getValue().getType() == DataType.NUMBER){
+				load1 += ", ";
+			} else {
+				load1 += "(255), ";
+			}
 		}
 		load1 = load1.substring(0, load1.lastIndexOf(','));
 		load1 += ")";
