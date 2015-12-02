@@ -43,19 +43,19 @@ public class ZipfianGenerator implements Generator {
 		List<String> pool = Files.readAllLines(Paths.get(valuePool));
 		if (stringGenerator == null)
 			stringGenerator = new ZipfDistribution(pool.size(), 2);
-		return null;
+		return pool.get(stringGenerator.sample());
 	}
 
 	@Override
 	public int getNextInt() {
-		// TODO Auto-generated method stub
-		return 0;
+		return getNextInt(0, 99);
 	}
 
 	@Override
 	public int getNextInt(int start, int end) {
-		// TODO Auto-generated method stub
-		return 0;
+		if (numberGenerator == null)
+			numberGenerator = new ZipfDistribution(end - start, 2);
+		return numberGenerator.sample() + start;
 	}
 
 	@Override
