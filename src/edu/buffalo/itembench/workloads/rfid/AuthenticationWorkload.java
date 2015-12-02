@@ -117,8 +117,8 @@ public class AuthenticationWorkload extends Workload {
 				null, null, null, Distribution.Series));
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Random));
-		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false, null,
-				null, "resources/areas.txt", Distribution.Random));
+		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false,
+				null, null, "resources/areas.txt", Distribution.Random));
 
 		String load1 = "CREATE TABLE POSITION_SNAPSHOT(";
 		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
@@ -138,24 +138,19 @@ public class AuthenticationWorkload extends Workload {
 			e.printStackTrace();
 		}
 		connection = dbConn;
-		
+
 		setTotalOps(0);
-		for(int i=0;i<5;i++){
+		for (int i = 0; i < 5; i++) {
 			writeData();
 			try {
-				Helper.memList.add(Helper.sg.getMem().getUsed()/1024);
+				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
-				Helper.cpuList.add(nw.getPercent()*100/Helper.cpuCount);
+				Helper.cpuList.add(nw.getPercent() * 100 / Helper.cpuCount);
 			} catch (SigarException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}	
+			}
 		}
-		
-//		writeData();
-//		writeData();
-//		writeData();
-//		writeData();
 	}
 
 	private boolean readData(Object id) {
@@ -218,6 +213,6 @@ public class AuthenticationWorkload extends Workload {
 			statement.execute(query2);
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}			
+		}
 	}
 }

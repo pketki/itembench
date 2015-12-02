@@ -41,12 +41,13 @@ public class DataGenerator {
 			switch (value.getType()) {
 			case BLOB:
 				throw new OperationNotSupportedException();
+			case TIMESTAMP:
 			case DATETIME:
 				if (dateGenerator == null)
 					dateGenerator = GeneratorFactory.getInstance()
 							.getGenerator(value.getDistribution());
 				Long now = dateGenerator.getNextDate(new Date(),
-						DateUtils.addDays(new Date(), -2), 1).getTime();
+						DateUtils.addDays(new Date(), 2), 1).getTime();
 				row.add(new java.sql.Date(now));
 				break;
 			case INT:

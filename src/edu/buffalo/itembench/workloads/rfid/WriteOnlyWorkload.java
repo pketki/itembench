@@ -47,8 +47,8 @@ public class WriteOnlyWorkload extends Workload {
 				null, null, null, Distribution.Series));
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Random));
-		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false, null,
-				null, "resources/areas.txt", Distribution.Random));
+		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false,
+				null, null, "resources/areas.txt", Distribution.Random));
 	}
 
 	/**
@@ -66,7 +66,8 @@ public class WriteOnlyWorkload extends Workload {
 		load = "CREATE TABLE POSITION_SNAPSHOT (";
 		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
 			load += column.getKey() + " " + column.getValue().getType();
-			if(column.getValue().getType() == DataType.INT || column.getValue().getType() == DataType.NUMBER){
+			if (column.getValue().getType() == DataType.INT
+					|| column.getValue().getType() == DataType.NUMBER) {
 				load += ", ";
 			} else {
 				load += "(255), ";
@@ -87,22 +88,22 @@ public class WriteOnlyWorkload extends Workload {
 	public void run(Connection dbConn) throws IOException {
 		connection = dbConn;
 		setTotalOps(0);
-		for(int i=0;i<5;i++){
+		for (int i = 0; i < 5; i++) {
 			loadData();
 			try {
-				Helper.memList.add(Helper.sg.getMem().getUsed()/1024);
+				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
-				Helper.cpuList.add(nw.getPercent()*100/Helper.cpuCount);
+				Helper.cpuList.add(nw.getPercent() * 100 / Helper.cpuCount);
 			} catch (SigarException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}	
+			}
 		}
-		
-//		 loadData();
-//		 loadData();
-//		 loadData();
-//		 loadData();
+
+		// loadData();
+		// loadData();
+		// loadData();
+		// loadData();
 	}
 
 	private void loadData() throws IOException {
@@ -137,13 +138,6 @@ public class WriteOnlyWorkload extends Workload {
 		}
 	}
 
-	private void readQuery() {
-		query = "SELECT COUNT(TAG_ID), TRACK "
-				+ "FROM POSITION_SNAPSHOT P, TALK_LIST L, TALKS T "
-				+ "WHERE P.TAG_ID = L.HACKER_ID AND "
-				+ "L.TALK_ID = T.TALK_ID GROUP BY TRACK;";
-	}
-
 	@Override
 	public void close(Connection dbConn) {
 		connection = dbConn;
@@ -153,6 +147,6 @@ public class WriteOnlyWorkload extends Workload {
 			statement.execute(load);
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}		
+		}
 	}
 }
