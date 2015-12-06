@@ -6,7 +6,7 @@ package edu.buffalo.itembench.generators.DataGen;
 public class InvalidDistribution extends Exception{
     private static final String errorMessage = "Invalid distribution";
 
-    InvalidDistribution(){
+    public InvalidDistribution(){
         super(errorMessage);
     }
 }

@@ -46,5 +46,4 @@ public class ColumnDescriptor {
 	public String getValuePool() {
 		return valuePool;
 	}
-
 }

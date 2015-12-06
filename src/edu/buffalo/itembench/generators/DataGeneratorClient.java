@@ -4,6 +4,7 @@ import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.DataGen.Distribution;
 import edu.buffalo.itembench.generators.DataGen.GeneratorFactory;
 import edu.buffalo.itembench.generators.DataGen.InvalidDistribution;
+import edu.buffalo.itembench.util.DataType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -64,14 +65,29 @@ public class DataGeneratorClient{
         Generator generator = null;
         ColumnDescriptor descriptor = null;
 
-        for(int index=0;index<this.tupleSize;index++){
+        for(String id : schema.keySet()){
+            descriptor = schema.get(id);
+            distribution = getDistribution(descriptor);
             generator = generatorFactory.getGenerator(distribution);
             generatorList.add(generator);
         }
     }
 
-    public List<Object> getRow() {
+    public Distribution getDistribution(ColumnDescriptor columnDescriptor)
+            throws InvalidDistribution{
 
+        if(columnDescriptor.getType().equals(DataType.NUMBER)
+                && !distribution.equals(Distribution.AlphaNumeric)) {
+            return distribution;
+        }
+        else if(columnDescriptor.getType().equals(DataType.TEXT)) {
+            return Distribution.AlphaNumeric;
+        }
+        else
+            throw new InvalidDistribution();
+    }
+
+    public List<Object> getRow() {
         List<Object> tupleList = new ArrayList<>();
 
         int index = 0;
@@ -84,8 +100,6 @@ public class DataGeneratorClient{
         return tupleList;
     }
 
-
-
     public static void main(String[] args){
         DataGeneratorClient client  = new DataGeneratorClient();
         try {
@@ -95,12 +109,8 @@ public class DataGeneratorClient{
             for(Object elem : tupleList){
                 System.out.println(elem);
             }
-
-
         }catch(Exception ex){
             ex.printStackTrace();
         }
-
     }
-
 }
