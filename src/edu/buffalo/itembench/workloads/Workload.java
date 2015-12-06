@@ -17,11 +17,20 @@ public abstract class Workload {
 	private int readLoad;
 	private int writeLoad;
 	protected Map<String, ColumnDescriptor> schema;
+	private int totalOps = 0;
 
 	// private int updateLoad;
 
 	public Workload() {
 		super();
+	}
+	
+	public int getTotalOps() {
+		return totalOps;
+	}
+
+	public void setTotalOps(int totalOps) {
+		this.totalOps = totalOps;
 	}
 
 	public int getReadLoad() {
@@ -51,4 +60,6 @@ public abstract class Workload {
 	public abstract void init(Connection dbConn);
 
 	public abstract void run(Connection dbConn) throws IOException;
+	
+	public abstract void close(Connection dbConn);
 }
