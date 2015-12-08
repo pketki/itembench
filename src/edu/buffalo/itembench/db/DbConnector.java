@@ -28,6 +28,7 @@ public class DbConnector {
 		super();
 		Properties props = new Properties();
 		try {
+//			System.out.println(getClass());
 			props.load(getClass().getResourceAsStream("/database.properties"));
 			driver = props.getProperty("driver");
 			connectionURL = props.getProperty("url");
@@ -67,7 +68,9 @@ public class DbConnector {
 
 	public void closeConnection() throws DbException {
 		try {
-			connection.close();
+			if(connection!=null && !connection.isClosed()) {
+				connection.close();
+			}
 		} catch (SQLException e) {
 			throw new DbException("Unable to close connection", e);
 		}
