@@ -1,5 +1,5 @@
 /**
- * 
+ * Exceptions thrown by DbConnector including connection as well as query exceptions
  */
 package edu.buffalo.itembench.db;
 
@@ -26,7 +26,6 @@ public class DbException extends Exception {
 	 * @param arg1
 	 */
 	public DbException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
 		System.out.println(arg0);
 		arg1.printStackTrace();
 	}

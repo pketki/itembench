@@ -3,16 +3,18 @@
  */
 package edu.buffalo.itembench.test;
 
+import java.io.Serializable;
+
 /**
  * @author pketki
  *
  */
-public class MetricsBean {
+public class MetricsBean implements Serializable {
 	private Float runTime;
 	private Float throughput;
 	private Float latency;
 	private Double cpuUsage;
-	private Double memoryUsage;
+	private Long memoryUsage;
 
 	public Float getRunTime() {
 		return runTime;
@@ -46,12 +48,20 @@ public class MetricsBean {
 		this.cpuUsage = cpuUsage;
 	}
 
-	public Double getMemoryUsage() {
+	public Long getMemoryUsage() {
 		return memoryUsage;
 	}
 
-	public void setMemoryUsage(Double memoryUsage) {
+	public void setMemoryUsage(Long memoryUsage) {
 		this.memoryUsage = memoryUsage;
+	}
+
+	@Override
+	public String toString() {
+		return "MetricsBean [Overall RunTime(ms)=" + runTime + ", Throughput=" + throughput
+				+ ", Average Latency(ms)=" + latency + ", Cpu Usage=" + cpuUsage
+				+ "%, Memory Usage(kb)=" + memoryUsage + "]";
+
 	}
 
 }
