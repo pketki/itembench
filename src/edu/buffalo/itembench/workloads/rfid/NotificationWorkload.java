@@ -3,27 +3,6 @@
  */
 package edu.buffalo.itembench.workloads.rfid;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.naming.OperationNotSupportedException;
-
-import org.apache.commons.lang3.time.DateUtils;
-import org.hyperic.sigar.ProcCpu;
-import org.hyperic.sigar.SigarException;
-
 import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.Distribution;
 import edu.buffalo.itembench.generators.InvalidDistribution;
@@ -31,6 +10,20 @@ import edu.buffalo.itembench.generators.client.DataGenerator;
 import edu.buffalo.itembench.util.DataType;
 import edu.buffalo.itembench.util.Helper;
 import edu.buffalo.itembench.workloads.Workload;
+import org.apache.commons.lang3.time.DateUtils;
+import org.hyperic.sigar.ProcCpu;
+import org.hyperic.sigar.SigarException;
+
+import javax.naming.OperationNotSupportedException;
+import java.io.IOException;
+import java.sql.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author pketki
