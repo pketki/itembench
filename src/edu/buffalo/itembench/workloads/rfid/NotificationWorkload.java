@@ -248,7 +248,6 @@ public class NotificationWorkload extends Workload {
 				System.out.println(result.getInt(1));
 			}
 		} catch (Exception e) {
-			System.out.println(" exception");
 			e.printStackTrace();
 		}
 
