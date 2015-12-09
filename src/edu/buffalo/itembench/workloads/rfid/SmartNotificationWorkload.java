@@ -3,20 +3,13 @@
  */
 package edu.buffalo.itembench.workloads.rfid;
 
-import edu.buffalo.itembench.db.ColumnDescriptor;
-import edu.buffalo.itembench.generators.Distribution;
-import edu.buffalo.itembench.generators.InvalidDistribution;
-import edu.buffalo.itembench.generators.client.DataGenerator;
-import edu.buffalo.itembench.util.DataType;
-import edu.buffalo.itembench.util.Helper;
-import edu.buffalo.itembench.workloads.Workload;
-import org.apache.commons.lang3.time.DateUtils;
-import org.hyperic.sigar.ProcCpu;
-import org.hyperic.sigar.SigarException;
-
-import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +18,25 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.naming.OperationNotSupportedException;
+
+import org.apache.commons.lang3.time.DateUtils;
+import org.hyperic.sigar.ProcCpu;
+import org.hyperic.sigar.SigarException;
+
+import edu.buffalo.itembench.db.ColumnDescriptor;
+import edu.buffalo.itembench.generators.Distribution;
+import edu.buffalo.itembench.generators.InvalidDistribution;
+import edu.buffalo.itembench.generators.client.DataGenerator;
+import edu.buffalo.itembench.util.DataType;
+import edu.buffalo.itembench.util.Helper;
+import edu.buffalo.itembench.workloads.Workload;
+
 /**
- * @author pketki
+ * @author Warren
  *
  */
-public class NotificationWorkload extends Workload {
+public class SmartNotificationWorkload extends Workload {
 
 	private Connection connection;
 	private ScheduledExecutorService scheduler = Executors
@@ -38,7 +45,7 @@ public class NotificationWorkload extends Workload {
 	/**
 	 * 
 	 */
-	public NotificationWorkload() {
+	public SmartNotificationWorkload() {
 		setReadLoad(40);
 		setWriteLoad(60);
 	}
@@ -50,29 +57,30 @@ public class NotificationWorkload extends Workload {
 	 */
 	@Override
 	public void init(Connection dbConn) {
+            
+                
 		Map<String, ColumnDescriptor> schema1 = new LinkedHashMap<String, ColumnDescriptor>();
-		schema1.put("HACKER_ID", new ColumnDescriptor(DataType.INT, false,
+		schema1.put("ATTENDEE_ID", new ColumnDescriptor(DataType.INT, false,
 				3000, 6500, null, Distribution.Random));
-		schema1.put("TALK_ID", new ColumnDescriptor(DataType.INT, false, 1,
-				100, null, Distribution.Zipfian));
-		String load = "CREATE TABLE TALK_LIST (";
+		schema1.put("INTEREST", new ColumnDescriptor(DataType.VARCHAR, false, null,
+				null, "resources/interests.txt", Distribution.Series));
+                
+		String load = "CREATE TABLE AUTHORIZED_USER (";
 		for (Entry<String, ColumnDescriptor> column : schema1.entrySet()) {
 			load += column.getKey() + " " + column.getValue().getType() + ", ";
 		}
 		load = load.substring(0, load.lastIndexOf(','));
 		load += ")";
 
+                
+                
 		Map<String, ColumnDescriptor> schema2 = new LinkedHashMap<String, ColumnDescriptor>();
-		schema2.put("TALK_ID", new ColumnDescriptor(DataType.INT, true, 1, 100,
-				null, Distribution.Series));
-		schema2.put("TITLE", new ColumnDescriptor(DataType.VARCHAR, true, null,
-				null, null, Distribution.Random));
-		schema2.put("TIME", new ColumnDescriptor(DataType.DATETIME, false,
-				null, null, null, Distribution.Series));
-		schema2.put("AREA", new ColumnDescriptor(DataType.VARCHAR, false, null,
-				null, "resources/areas.txt", Distribution.Series));
-
-		String load1 = "CREATE TABLE TALKS (";
+		schema2.put("ATTENDEE_ID", new ColumnDescriptor(DataType.INT, true, 3000, 6500,
+				null, Distribution.Random));
+		schema2.put("INTEREST", new ColumnDescriptor(DataType.VARCHAR, false, null,
+				null, "resources/interests.txt", Distribution.Random));
+		
+		String load1 = "CREATE TABLE REGISTERED_USERS (";
 		for (Entry<String, ColumnDescriptor> column : schema2.entrySet()) {
 			load1 += column.getKey() + " " + column.getValue().getType() + ", ";
 		}
@@ -85,8 +93,8 @@ public class NotificationWorkload extends Workload {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		String query = "INSERT INTO TALK_LIST VALUES(?,?)";
-		String query1 = "INSERT INTO TALKS VALUES(?,?,?,?)";
+		String query = "INSERT INTO AUTHORIZED_USER VALUES(?,?)";
+		String query1 = "INSERT INTO REGISTERED_USERS VALUES(?,?)";
 
 		try {
 			dbConn.setAutoCommit(false);
@@ -94,7 +102,9 @@ public class NotificationWorkload extends Workload {
 			DataGenerator generator = new DataGenerator();
 			generator.setSchema(schema2);
 			List<Object> row;
-			int insertLimit = 100;
+			
+                        //Initialize registered users table
+                        int insertLimit = 100;
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
 				int idx = 1;
@@ -107,19 +117,18 @@ public class NotificationWorkload extends Workload {
 			statement.executeBatch();
 			dbConn.commit();
 
+                        //Initialize authenticated user
 			statement = dbConn.prepareStatement(query);
 			generator = new DataGenerator();
 			generator.setSchema(schema1);
-			insertLimit = 10000;
-			for (int i = 0; i < insertLimit; i++) {
-				row = generator.getRow();
-				int idx = 1;
-				for (Object value : row) {
-					statement.setObject(idx, value);
-					idx++;
-				}
-				statement.addBatch();
+			row = generator.getRow();
+			int idx = 1;
+			for (Object value : row) {
+				statement.setObject(idx, value);
+				idx++;
 			}
+			statement.addBatch();
+			
 			statement.executeBatch();
 			dbConn.commit();
 		} catch (SQLException e) {
@@ -131,21 +140,21 @@ public class NotificationWorkload extends Workload {
 		} catch (InvalidDistribution e) {
 			e.printStackTrace();
 		}
-
+                
 		Runnable runnable = new Runnable() {
 			public void run() {
-				NotificationWorkload workload = new NotificationWorkload();
+				SmartNotificationWorkload workload = new SmartNotificationWorkload();
 				workload.readData();
-
 			}
 		};
 		scheduler.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);
+                        
 	}
 
 	@Override
 	public void run(Connection dbConn) throws IOException {
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
-		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.VARCHAR, false,
+		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.DATETIME, false,
 				null, null, null, Distribution.Series));
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Random));
@@ -173,7 +182,7 @@ public class NotificationWorkload extends Workload {
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
-			
+                        readData();
 			try {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
@@ -220,34 +229,27 @@ public class NotificationWorkload extends Workload {
 	}
 
 	public void readData() {
-		/*String query = "WITH T AS (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?) "
-				+ "SELECT L.HACKER_ID, L.TALK_ID "
-				+ "FROM TALK_LIST L, T "
-				+ "WHERE L.TALK_ID = T.TALK_ID "
-				+ "AND NOT EXISTS "
-				+ "(SELECT * FROM POSITION_SNAPSHOT P, T "
-				+ "WHERE P.AREA = T.TRACK "
-				+ "AND TAG_ID = L.HACKER_ID "
-				+ "AND T.TALK_ID = L.TALK_ID)";*/
-		String query = "SELECT A.HACKER_ID, A.TALK_ID " +
-				" FROM TALK_LIST A, TALKS B," +
+                
+		String query =  
+                                " SELECT C.AREA_ID, B.ATTENDEE_ID  " +
+				" FROM AUTHORIZED_USER A, REGISTERED_USERS B," +
 				" POSITION_SNAPSHOT C " +
-				" WHERE A.TALK_ID = B.TALK_ID" +
-				" AND B.TIME BETWEEN ? AND ?" +
-				" AND B.AREA <> C.AREA_ID" +
-				" AND A.HACKER_ID = C.TAG_ID;";
-
+				" WHERE A.INTEREST = B.INTEREST" +
+				" AND B.ATTENDEE_ID = C.TAG_ID " +
+                                " GROUP BY B.ATTENDEE_ID  " +
+                                " HAVING C.TIMESTAMP =  ( " +
+                                " SELECT MAX(TIMESTAMP) " +
+                                " FROM POSITION_SNAPSHOT " + 
+                                " WHERE TAG_ID=B.ATTENDEE_ID)";
 		try {
 			PreparedStatement statement = connection.prepareStatement(query);
 			java.util.Date now = new java.util.Date();
-			statement.setDate(1, new Date(now.getTime()));
-			statement.setDate(2, new Date(DateUtils.addMinutes(now, 10)
-					.getTime()));
+			
 			ResultSet result = statement.executeQuery();
-			while (result.next()) {
-				System.out.println(result.getInt(1));
-			}
-		} catch (Exception e) {
+			//while (result.next())
+                            
+                        //    System.out.println(result.getString(1)+" "+result.getInt(2));
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
@@ -262,8 +264,8 @@ public class NotificationWorkload extends Workload {
 		}
 		connection = dbConn;
 		String query1 = "DROP TABLE POSITION_SNAPSHOT";
-		String query2 = "DROP TABLE TALK_LIST";
-		String query3 = "DROP TABLE TALKS";
+		String query2 = "DROP TABLE AUTHORIZED_USER";
+		String query3 = "DROP TABLE REGISTERED_USERS";
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(query1);
@@ -275,4 +277,3 @@ public class NotificationWorkload extends Workload {
 		}
 	}
 }
-

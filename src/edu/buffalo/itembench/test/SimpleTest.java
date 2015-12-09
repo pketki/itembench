@@ -44,10 +44,10 @@ public class SimpleTest {
 		
 		Connection connection = dbConn.getConnection();
 		workload.init(connection);
-		dbConn.closeConnection();
+		//dbConn.closeConnection();
 
 		Long start = new Date().getTime();
-		connection = dbConn.getConnection();
+		//connection = dbConn.getConnection();
 		ProcCpu old = null;
 //		long oldMem = 0;
 		try {

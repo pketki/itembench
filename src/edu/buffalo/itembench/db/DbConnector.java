@@ -28,8 +28,10 @@ public class DbConnector {
 		super();
 		Properties props = new Properties();
 		try {
-//			System.out.println(getClass());
+			
+                        
 			props.load(getClass().getResourceAsStream("/database.properties"));
+                        
 			driver = props.getProperty("driver");
 			connectionURL = props.getProperty("url");
 			// user = props.getProperty("user");

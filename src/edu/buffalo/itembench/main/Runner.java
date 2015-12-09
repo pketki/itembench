@@ -9,6 +9,8 @@ import edu.buffalo.itembench.test.MetricsBean;
 import edu.buffalo.itembench.test.SimpleTest;
 import edu.buffalo.itembench.workloads.Workload;
 import edu.buffalo.itembench.workloads.rfid.NotificationWorkload;
+import edu.buffalo.itembench.workloads.rfid.SmartNotificationWorkload;
+import edu.buffalo.itembench.workloads.rfid.WriteOnlyWorkload;
 
 /**
  * @author pketki
@@ -22,10 +24,13 @@ public class Runner {
 	public static void main(String[] args) {
 		DbConnector dbConn = null;
 		try {
+                    
 			dbConn = new DbConnector();
 			SimpleTest test = new SimpleTest(dbConn);
-//			Workload workload = new WriteOnlyWorkload();
-			Workload workload = new NotificationWorkload();//AuthenticationWorkload();
+                        
+			//Workload workload = new WriteOnlyWorkload();
+			Workload workload = new SmartNotificationWorkload();//AuthenticationWorkload();
+                        
 			 for (int i = 0; i < 3; i++) {
 				test.run(workload);
 				MetricsBean metrics = test.getMetrics();
