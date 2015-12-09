@@ -1,8 +1,7 @@
 /**
  * 
  */
-package edu.buffalo.itembench.workloads.rfid;
-
+package edu.buffalo.itembench.workloads.ragnarok_rfid;
 
 import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.Distribution;
@@ -30,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * @author pketki
  *
  */
-public class NotificationWorkload extends Workload {
+public class RagNotificationWorkload extends Workload {
 
 	private Connection connection;
 	private ScheduledExecutorService scheduler = Executors
@@ -39,7 +38,7 @@ public class NotificationWorkload extends Workload {
 	/**
 	 * 
 	 */
-	public NotificationWorkload() {
+	public RagNotificationWorkload() {
 		setReadLoad(40);
 		setWriteLoad(60);
 	}
@@ -53,7 +52,7 @@ public class NotificationWorkload extends Workload {
 	public void init(Connection dbConn) {
 		Map<String, ColumnDescriptor> schema1 = new LinkedHashMap<String, ColumnDescriptor>();
 		schema1.put("HACKER_ID", new ColumnDescriptor(DataType.INT, false,
-				3000, 6500, null, Distribution.Random));
+				300000000, 2000000000, null, Distribution.Random));
 		schema1.put("TALK_ID", new ColumnDescriptor(DataType.INT, false, 1,
 				100, null, Distribution.Zipfian));
 		String load = "CREATE TABLE TALK_LIST (";
@@ -64,7 +63,7 @@ public class NotificationWorkload extends Workload {
 		load += ")";
 
 		Map<String, ColumnDescriptor> schema2 = new LinkedHashMap<String, ColumnDescriptor>();
-		schema2.put("TALK_ID", new ColumnDescriptor(DataType.INT, true, 1, 100,
+		schema2.put("TALK_ID", new ColumnDescriptor(DataType.INT, true, 1, 1000000000,
 				null, Distribution.Series));
 		schema2.put("TITLE", new ColumnDescriptor(DataType.VARCHAR, true, null,
 				null, null, Distribution.Random));
@@ -95,7 +94,7 @@ public class NotificationWorkload extends Workload {
 			DataGenerator generator = new DataGenerator();
 			generator.setSchema(schema2);
 			List<Object> row;
-			int insertLimit = 100;
+			int insertLimit = 1000000000;
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
 				int idx = 1;
@@ -111,7 +110,7 @@ public class NotificationWorkload extends Workload {
 			statement = dbConn.prepareStatement(query);
 			generator = new DataGenerator();
 			generator.setSchema(schema1);
-			insertLimit = 10000;
+			insertLimit = 1000000000;
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
 				int idx = 1;
@@ -135,7 +134,7 @@ public class NotificationWorkload extends Workload {
 
 		Runnable runnable = new Runnable() {
 			public void run() {
-				NotificationWorkload workload = new NotificationWorkload();
+				RagNotificationWorkload workload = new RagNotificationWorkload();
 				workload.readData();
 
 			}
@@ -148,8 +147,8 @@ public class NotificationWorkload extends Workload {
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, null, Distribution.Series));
-		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
-				6500, null, Distribution.Random));
+		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 300000000,
+				2000000000, null, Distribution.Random));
 		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, "resources/areas.txt", Distribution.Random));
 		connection = dbConn;
@@ -194,7 +193,7 @@ public class NotificationWorkload extends Workload {
 			DataGenerator generator = new DataGenerator();
 			generator.setSchema(schema);
 			List<Object> row;
-			int insertLimit = getWriteLoad() * 300;
+			int insertLimit = getWriteLoad() * 2000000000;;
 			setTotalOps(getTotalOps() + insertLimit);
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
