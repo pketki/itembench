@@ -132,13 +132,14 @@ public class NotificationWorkload extends Workload {
 			e.printStackTrace();
 		}
 
-		Runnable runnable = new Runnable() {
+	/*	Runnable runnable = new Runnable() {
 			public void run() {
 				NotificationWorkload workload = new NotificationWorkload();
 				workload.readData();
+
 			}
 		};
-		scheduler.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);*/
 	}
 
 	@Override
@@ -172,6 +173,7 @@ public class NotificationWorkload extends Workload {
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
+			readData();
 			try {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
@@ -218,7 +220,7 @@ public class NotificationWorkload extends Workload {
 	}
 
 	public void readData() {
-		String query = "WITH T AS (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?) "
+		/*String query = "WITH T AS (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?) "
 				+ "SELECT L.HACKER_ID, L.TALK_ID "
 				+ "FROM TALK_LIST L, T "
 				+ "WHERE L.TALK_ID = T.TALK_ID "
@@ -226,18 +228,27 @@ public class NotificationWorkload extends Workload {
 				+ "(SELECT * FROM POSITION_SNAPSHOT P, T "
 				+ "WHERE P.AREA = T.TRACK "
 				+ "AND TAG_ID = L.HACKER_ID "
-				+ "AND T.TALK_ID = L.TALK_ID)";
+				+ "AND T.TALK_ID = L.TALK_ID)";*/
+		String query = "SELECT A.HACKER_ID, A.TALK_ID " +
+				" FROM TALK_LIST A, TALKS B," +
+				" POSITION_SNAPSHOT C " +
+				" WHERE A.TALK_ID = B.TALK_ID" +
+				" AND B.TIME BETWEEN ? AND ?" +
+				" AND B.AREA <> C.AREA_ID" +
+				" AND A.HACKER_ID = C.TAG_ID;";
+
 		try {
 			PreparedStatement statement = connection.prepareStatement(query);
 			java.util.Date now = new java.util.Date();
 			statement.setDate(1, new Date(now.getTime()));
 			statement.setDate(2, new Date(DateUtils.addMinutes(now, 10)
 					.getTime()));
-
 			ResultSet result = statement.executeQuery();
-			while (result.next())
+			while (result.next()) {
 				System.out.println(result.getInt(1));
-		} catch (SQLException e) {
+			}
+		} catch (Exception e) {
+			System.out.println(" exception");
 			e.printStackTrace();
 		}
 
