@@ -3,6 +3,7 @@
  */
 package edu.buffalo.itembench.workloads.rfid;
 
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
@@ -143,8 +144,13 @@ public class SmartNotificationWorkload extends Workload {
                 
 		Runnable runnable = new Runnable() {
 			public void run() {
-				SmartNotificationWorkload workload = new SmartNotificationWorkload();
-				workload.readData();
+                            try{
+                                if(connection!=null && !connection.isClosed())
+                                    readData();
+                            } catch (SQLException e) {
+                                System.out.println("closed");
+                            }
+                            
 			}
 		};
 		scheduler.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);
@@ -182,7 +188,7 @@ public class SmartNotificationWorkload extends Workload {
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
-                        readData();
+                        //readData();
 			try {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
@@ -229,7 +235,7 @@ public class SmartNotificationWorkload extends Workload {
 	}
 
 	public void readData() {
-                
+                System.out.println("here");
 		String query =  
                                 " SELECT C.AREA_ID, B.ATTENDEE_ID  " +
 				" FROM AUTHORIZED_USER A, REGISTERED_USERS B," +
@@ -246,9 +252,9 @@ public class SmartNotificationWorkload extends Workload {
 			java.util.Date now = new java.util.Date();
 			
 			ResultSet result = statement.executeQuery();
-			//while (result.next())
+			while (result.next())
                             
-                        //    System.out.println(result.getString(1)+" "+result.getInt(2));
+                            System.out.println(result.getString(1)+" "+result.getInt(2));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

@@ -135,8 +135,12 @@ public class NotificationWorkload extends Workload {
 
 		Runnable runnable = new Runnable() {
 			public void run() {
-				NotificationWorkload workload = new NotificationWorkload();
-				workload.readData();
+                            try{
+                                if(connection!=null && !connection.isClosed())
+                                    readData();
+                            } catch (SQLException e) {
+                                System.out.println("closed");
+                            }
 
 			}
 		};

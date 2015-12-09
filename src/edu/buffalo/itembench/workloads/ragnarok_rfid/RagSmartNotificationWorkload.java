@@ -143,8 +143,12 @@ public class RagSmartNotificationWorkload extends Workload {
                 
 		Runnable runnable = new Runnable() {
 			public void run() {
-				RagSmartNotificationWorkload workload = new RagSmartNotificationWorkload();
-				workload.readData();
+                            try{
+                                if(connection!=null && !connection.isClosed())
+                                    readData();
+                            } catch (SQLException e) {
+                                System.out.println("closed");
+                            }
 			}
 		};
 		scheduler.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);

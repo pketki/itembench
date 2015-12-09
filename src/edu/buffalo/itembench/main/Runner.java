@@ -30,7 +30,7 @@ public class Runner {
 			SimpleTest test = new SimpleTest(dbConn);
                         
 			//Workload workload = new WriteOnlyWorkload();
-			Workload workload = new RagSmartNotificationWorkload();//AuthenticationWorkload();
+			Workload workload = new SmartNotificationWorkload();//AuthenticationWorkload();
                         
 			 for (int i = 0; i < 3; i++) {
 				test.run(workload);
