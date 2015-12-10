@@ -144,6 +144,8 @@ public class NotificationWorkload extends Workload {
 				try {
 					if (connection != null && !connection.isClosed())
 						readData();
+					else
+						scheduler.shutdown();
 				} catch (SQLException e) {
 					System.out.println("closed");
 				}
@@ -265,24 +267,25 @@ public class NotificationWorkload extends Workload {
 
 	@Override
 	public void close(Connection dbConn) {
-		scheduler.shutdown();
+		// scheduler.shutdownNow();
 		try {
 			scheduler.awaitTermination(5, TimeUnit.SECONDS);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
-		connection = dbConn;
-		String query1 = "DROP TABLE POSITION_SNAPSHOT";
-		String query2 = "DROP TABLE TALK_LIST";
-		String query3 = "DROP TABLE TALKS";
-		try {
+			connection = dbConn;
+			String query1 = "DROP TABLE POSITION_SNAPSHOT";
+			String query2 = "DROP TABLE TALK_LIST";
+			String query3 = "DROP TABLE TALKS";
+
 			Statement statement = dbConn.createStatement();
 			statement.execute(query1);
 			statement.execute(query2);
 			statement.execute(query3);
 			dbConn.close();
+			// }
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+
 	}
 }
