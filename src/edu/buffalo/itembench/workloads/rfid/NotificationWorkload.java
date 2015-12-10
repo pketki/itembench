@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.OperationNotSupportedException;
@@ -39,13 +40,13 @@ import edu.buffalo.itembench.workloads.Workload;
 public class NotificationWorkload extends Workload {
 
 	private Connection connection;
-	private ScheduledExecutorService scheduler = Executors
-			.newSingleThreadScheduledExecutor();
+	private ScheduledExecutorService scheduler;
 
 	/**
 	 * 
 	 */
 	public NotificationWorkload() {
+		scheduler = Executors.newSingleThreadScheduledExecutor();
 		setReadLoad(40);
 		setWriteLoad(60);
 	}
@@ -139,24 +140,6 @@ public class NotificationWorkload extends Workload {
 			e.printStackTrace();
 		}
 
-		Runnable runnable = new Runnable() {
-			public void run() {
-				try {
-					if (connection != null && !connection.isClosed())
-						readData();
-					else
-						scheduler.shutdown();
-				} catch (SQLException e) {
-					System.out.println("closed");
-				}
-
-			}
-		};
-		scheduler.scheduleAtFixedRate(runnable, 10, 20, TimeUnit.SECONDS);
-	}
-
-	@Override
-	public void run(Connection dbConn) throws IOException {
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, null, Distribution.Series));
@@ -165,7 +148,7 @@ public class NotificationWorkload extends Workload {
 		schema.put("AREA", new ColumnDescriptor(DataType.VARCHAR, false, null,
 				null, "resources/areas.txt", Distribution.Random));
 		connection = dbConn;
-		String load = "CREATE TABLE POSITION_SNAPSHOT (";
+		load = "CREATE TABLE POSITION_SNAPSHOT (";
 		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
 			load += column.getKey() + " " + column.getValue().getType();
 			if (column.getValue().getType() == DataType.INT
@@ -183,6 +166,23 @@ public class NotificationWorkload extends Workload {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void run(Connection dbConn) throws IOException {
+		Runnable runnable = new Runnable() {
+			public void run() {
+				try {
+					if (connection != null && !connection.isClosed())
+						readData();
+				} catch (SQLException e) {
+					System.out.println("closed");
+				}
+
+			}
+		};
+		ScheduledFuture<?> readHandle = scheduler.scheduleAtFixedRate(runnable,
+				10, 20, TimeUnit.SECONDS);
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
@@ -195,6 +195,7 @@ public class NotificationWorkload extends Workload {
 				e.printStackTrace();
 			}
 		}
+		readHandle.cancel(true);
 	}
 
 	private void writeData() {
@@ -262,14 +263,13 @@ public class NotificationWorkload extends Workload {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	@Override
 	public void close(Connection dbConn) {
-		// scheduler.shutdownNow();
+		// scheduler.shutdown();
 		try {
-			scheduler.awaitTermination(5, TimeUnit.SECONDS);
+			// scheduler.awaitTermination(5, TimeUnit.SECONDS);
 			connection = dbConn;
 			String query1 = "DROP TABLE POSITION_SNAPSHOT";
 			String query2 = "DROP TABLE TALK_LIST";
@@ -281,8 +281,8 @@ public class NotificationWorkload extends Workload {
 			statement.execute(query3);
 			dbConn.close();
 			// }
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
+			// } catch (InterruptedException e1) {
+			// e1.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
