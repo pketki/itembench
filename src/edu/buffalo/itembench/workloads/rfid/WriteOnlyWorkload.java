@@ -94,16 +94,13 @@ public class WriteOnlyWorkload extends Workload {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
 				Helper.cpuList.add(nw.getPercent() * 100 / Helper.cpuCount);
+				Thread.sleep(500);
 			} catch (SigarException e) {
-				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-
-		// loadData();
-		// loadData();
-		// loadData();
-		// loadData();
 	}
 
 	private void loadData() throws IOException {
