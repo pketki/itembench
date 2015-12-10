@@ -107,7 +107,7 @@ public class SeriesGenerator implements Generator {
 	 */
 	@Override
 	public Date getNextDate(Date start, Date end, int interval) {
-		return DateUtils.addMilliseconds(start, interval);
+		return DateUtils.addMinutes(start, interval);
 	}
 
 }

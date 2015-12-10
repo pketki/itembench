@@ -2,7 +2,7 @@
  * Workload to emulate read-only applications 
  * like an authenticating RFID or local cache 
  */
-package edu.buffalo.itembench.workloads.rfid;
+package edu.buffalo.itembench.workloads.ragnarok_rfid;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -31,7 +31,7 @@ import edu.buffalo.itembench.workloads.Workload;
  * @author pketki
  *
  */
-public class WriteOnlyWorkload extends Workload {
+public class RagWriteOnlyWorkload extends Workload {
 
 	private String load;
 	private String query;
@@ -40,13 +40,13 @@ public class WriteOnlyWorkload extends Workload {
 	/**
 	 * 
 	 */
-	public WriteOnlyWorkload() {
+	public RagWriteOnlyWorkload() {
 		this.setWriteLoad(100);
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, null, Distribution.Series));
-		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
-				6500, null, Distribution.Random));
+		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 300000000,
+				2000000000, null, Distribution.Random));
 		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, "resources/areas.txt", Distribution.Random));
 	}
@@ -56,7 +56,7 @@ public class WriteOnlyWorkload extends Workload {
 	 * @param writeLoad
 	 * @param updateLoad
 	 */
-	public WriteOnlyWorkload(int readLoad, int writeLoad, int updateLoad) {
+	public RagWriteOnlyWorkload(int readLoad, int writeLoad, int updateLoad) {
 		this();
 	}
 
@@ -94,13 +94,16 @@ public class WriteOnlyWorkload extends Workload {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
 				Helper.cpuList.add(nw.getPercent() * 100 / Helper.cpuCount);
-				Thread.sleep(500);
 			} catch (SigarException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+
+		// loadData();
+		// loadData();
+		// loadData();
+		// loadData();
 	}
 
 	private void loadData() throws IOException {
@@ -111,7 +114,7 @@ public class WriteOnlyWorkload extends Workload {
 			DataGenerator generator = new DataGenerator();
 			generator.setSchema(schema);
 			List<Object> row;
-			int insertLimit = getWriteLoad() * 300;
+			int insertLimit = getWriteLoad() * 2000000000;
 			setTotalOps(getTotalOps() + insertLimit);
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
