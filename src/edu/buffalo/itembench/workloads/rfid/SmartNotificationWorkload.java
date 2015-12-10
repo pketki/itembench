@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.OperationNotSupportedException;
@@ -141,19 +142,6 @@ public class SmartNotificationWorkload extends Workload {
 		} catch (InvalidDistribution e) {
 			e.printStackTrace();
 		}
-                
-		Runnable runnable = new Runnable() {
-			public void run() {
-                            try{
-                                if(connection!=null && !connection.isClosed())
-                                    readData();
-                            } catch (SQLException e) {
-                                System.out.println("closed");
-                            }
-                            
-			}
-		};
-		scheduler.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);
                         
 	}
 
@@ -185,6 +173,18 @@ public class SmartNotificationWorkload extends Workload {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		Runnable runnable = new Runnable() {
+			public void run() {
+                            try{
+                                if(connection!=null && !connection.isClosed())
+                                    readData();
+                            } catch (SQLException e) {
+                                System.out.println("closed");
+                            }
+                            
+			}
+		};
+		ScheduledFuture<?> runHandle = scheduler.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
@@ -198,6 +198,7 @@ public class SmartNotificationWorkload extends Workload {
 				e.printStackTrace();
 			}
 		}
+		runHandle.cancel(true);
 	}
 
 	private void writeData() {
