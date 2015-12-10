@@ -31,6 +31,7 @@ import edu.buffalo.itembench.workloads.Workload;
  * @author pketki
  *
  */
+
 public class AuthenticationWorkload extends Workload {
 
 	private Connection connection;
@@ -211,3 +212,4 @@ public class AuthenticationWorkload extends Workload {
 		}
 	}
 }
+
