@@ -3,6 +3,26 @@
  */
 package edu.buffalo.itembench.workloads.rfid;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.naming.OperationNotSupportedException;
+
+import org.apache.commons.lang3.time.DateUtils;
+import org.hyperic.sigar.ProcCpu;
+import org.hyperic.sigar.SigarException;
 
 import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.Distribution;
@@ -11,20 +31,6 @@ import edu.buffalo.itembench.generators.client.DataGenerator;
 import edu.buffalo.itembench.util.DataType;
 import edu.buffalo.itembench.util.Helper;
 import edu.buffalo.itembench.workloads.Workload;
-import org.apache.commons.lang3.time.DateUtils;
-import org.hyperic.sigar.ProcCpu;
-import org.hyperic.sigar.SigarException;
-
-import javax.naming.OperationNotSupportedException;
-import java.io.IOException;
-import java.sql.*;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author pketki
@@ -70,8 +76,8 @@ public class NotificationWorkload extends Workload {
 				null, null, Distribution.Random));
 		schema2.put("TIME", new ColumnDescriptor(DataType.DATETIME, false,
 				null, null, null, Distribution.Series));
-		schema2.put("AREA", new ColumnDescriptor(DataType.VARCHAR, false, null,
-				null, "resources/areas.txt", Distribution.Series));
+		schema2.put("TRACK", new ColumnDescriptor(DataType.VARCHAR, false,
+				null, null, "resources/areas.txt", Distribution.Series));
 
 		String load1 = "CREATE TABLE TALKS (";
 		for (Entry<String, ColumnDescriptor> column : schema2.entrySet()) {
@@ -135,16 +141,16 @@ public class NotificationWorkload extends Workload {
 
 		Runnable runnable = new Runnable() {
 			public void run() {
-                            try{
-                                if(connection!=null && !connection.isClosed())
-                                    readData();
-                            } catch (SQLException e) {
-                                System.out.println("closed");
-                            }
+				try {
+					if (connection != null && !connection.isClosed())
+						readData();
+				} catch (SQLException e) {
+					System.out.println("closed");
+				}
 
 			}
 		};
-		scheduler.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(runnable, 10, 20, TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -154,8 +160,8 @@ public class NotificationWorkload extends Workload {
 				null, null, null, Distribution.Series));
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Random));
-		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false,
-				null, null, "resources/areas.txt", Distribution.Random));
+		schema.put("AREA", new ColumnDescriptor(DataType.VARCHAR, false, null,
+				null, "resources/areas.txt", Distribution.Random));
 		connection = dbConn;
 		String load = "CREATE TABLE POSITION_SNAPSHOT (";
 		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
@@ -178,7 +184,6 @@ public class NotificationWorkload extends Workload {
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
-			
 			try {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
@@ -225,28 +230,28 @@ public class NotificationWorkload extends Workload {
 	}
 
 	public void readData() {
-		/*String query = "WITH T AS (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?) "
+		String query = "WITH T AS (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?), "
+				+ "P AS (SELECT MAX(TIMESTAMP), TAG_ID, AREA FROM POSITION_SNAPSHOT GROUP BY TAG_ID)"
 				+ "SELECT L.HACKER_ID, L.TALK_ID "
 				+ "FROM TALK_LIST L, T "
 				+ "WHERE L.TALK_ID = T.TALK_ID "
 				+ "AND NOT EXISTS "
-				+ "(SELECT * FROM POSITION_SNAPSHOT P, T "
+				+ "(SELECT * FROM P, T "
 				+ "WHERE P.AREA = T.TRACK "
-				+ "AND TAG_ID = L.HACKER_ID "
-				+ "AND T.TALK_ID = L.TALK_ID)";*/
-		String query = "SELECT A.HACKER_ID, A.TALK_ID " +
-				" FROM TALK_LIST A, TALKS B," +
-				" POSITION_SNAPSHOT C " +
-				" WHERE A.TALK_ID = B.TALK_ID" +
-				" AND B.TIME BETWEEN ? AND ?" +
-				" AND B.AREA <> C.AREA_ID" +
-				" AND A.HACKER_ID = C.TAG_ID;";
+				+ "AND TAG_ID = L.HACKER_ID " + "AND T.TALK_ID = L.TALK_ID)";
+		// String query = "SELECT A.HACKER_ID, A.TALK_ID " +
+		// " FROM TALK_LIST A, TALKS B," +
+		// " POSITION_SNAPSHOT C " +
+		// " WHERE A.TALK_ID = B.TALK_ID" +
+		// " AND B.TIME BETWEEN ? AND ?" +
+		// " AND B.AREA <> C.AREA_ID" +
+		// " AND A.HACKER_ID = C.TAG_ID;";
 
 		try {
 			PreparedStatement statement = connection.prepareStatement(query);
 			java.util.Date now = new java.util.Date();
 			statement.setDate(1, new Date(now.getTime()));
-			statement.setDate(2, new Date(DateUtils.addMinutes(now, 10)
+			statement.setDate(2, new Date(DateUtils.addMinutes(now, 5)
 					.getTime()));
 			ResultSet result = statement.executeQuery();
 			while (result.next()) {
@@ -260,6 +265,7 @@ public class NotificationWorkload extends Workload {
 
 	@Override
 	public void close(Connection dbConn) {
+		scheduler.shutdown();
 		try {
 			scheduler.awaitTermination(5, TimeUnit.SECONDS);
 		} catch (InterruptedException e1) {
@@ -280,4 +286,3 @@ public class NotificationWorkload extends Workload {
 		}
 	}
 }
-
