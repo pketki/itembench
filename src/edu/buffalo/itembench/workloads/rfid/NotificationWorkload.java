@@ -79,7 +79,7 @@ public class NotificationWorkload extends Workload {
 		schema2.put("TRACK", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, "resources/areas.txt", Distribution.Series));
 
-		String load1 = queryGen.getCreateQuery("TALKS", schema1);
+		String load1 = queryGen.getCreateQuery("TALKS", schema2);
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(load);
