@@ -3,7 +3,6 @@
  */
 package edu.buffalo.itembench.workloads.rfid;
 
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
@@ -14,7 +13,6 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -22,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.apache.commons.lang3.time.DateUtils;
 import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.SigarException;
 
@@ -30,6 +27,7 @@ import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.Distribution;
 import edu.buffalo.itembench.generators.InvalidDistribution;
 import edu.buffalo.itembench.generators.client.DataGenerator;
+import edu.buffalo.itembench.generators.client.QueryGenerator;
 import edu.buffalo.itembench.util.DataType;
 import edu.buffalo.itembench.util.Helper;
 import edu.buffalo.itembench.workloads.Workload;
@@ -59,35 +57,25 @@ public class SmartNotificationWorkload extends Workload {
 	 */
 	@Override
 	public void init(Connection dbConn) {
-            
-                
+
+		QueryGenerator queryGen = new QueryGenerator();
+
 		Map<String, ColumnDescriptor> schema1 = new LinkedHashMap<String, ColumnDescriptor>();
 		schema1.put("ATTENDEE_ID", new ColumnDescriptor(DataType.INT, false,
 				3000, 6500, null, Distribution.Random));
-		schema1.put("INTEREST", new ColumnDescriptor(DataType.VARCHAR, false, null,
-				null, "resources/interests.txt", Distribution.Series));
-                
-		String load = "CREATE TABLE AUTHORIZED_USER (";
-		for (Entry<String, ColumnDescriptor> column : schema1.entrySet()) {
-			load += column.getKey() + " " + column.getValue().getType() + ", ";
-		}
-		load = load.substring(0, load.lastIndexOf(','));
-		load += ")";
+		schema1.put("INTEREST", new ColumnDescriptor(DataType.VARCHAR, false,
+				null, null, "resources/interests.txt", Distribution.Series));
 
-                
-                
+		String load = queryGen.getCreateQuery("AUTHORIZED_USER", schema1);
+
 		Map<String, ColumnDescriptor> schema2 = new LinkedHashMap<String, ColumnDescriptor>();
-		schema2.put("ATTENDEE_ID", new ColumnDescriptor(DataType.INT, true, 3000, 6500,
-				null, Distribution.Random));
-		schema2.put("INTEREST", new ColumnDescriptor(DataType.VARCHAR, false, null,
-				null, "resources/interests.txt", Distribution.Random));
-		
-		String load1 = "CREATE TABLE REGISTERED_USERS (";
-		for (Entry<String, ColumnDescriptor> column : schema2.entrySet()) {
-			load1 += column.getKey() + " " + column.getValue().getType() + ", ";
-		}
-		load1 = load1.substring(0, load1.lastIndexOf(','));
-		load1 += ")";
+		schema2.put("ATTENDEE_ID", new ColumnDescriptor(DataType.INT, true,
+				3000, 6500, null, Distribution.Random));
+		schema2.put("INTEREST", new ColumnDescriptor(DataType.VARCHAR, false,
+				null, null, "resources/interests.txt", Distribution.Random));
+
+		String load1 = queryGen.getCreateQuery("REGISTERED_USERS", schema2);
+
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(load);
@@ -104,9 +92,9 @@ public class SmartNotificationWorkload extends Workload {
 			DataGenerator generator = new DataGenerator();
 			generator.setSchema(schema2);
 			List<Object> row;
-			
-                        //Initialize registered users table
-                        int insertLimit = 100;
+
+			// Initialize registered users table
+			int insertLimit = 100;
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
 				int idx = 1;
@@ -119,7 +107,7 @@ public class SmartNotificationWorkload extends Workload {
 			statement.executeBatch();
 			dbConn.commit();
 
-                        //Initialize authenticated user
+			// Initialize authenticated user
 			statement = dbConn.prepareStatement(query);
 			generator = new DataGenerator();
 			generator.setSchema(schema1);
@@ -130,7 +118,7 @@ public class SmartNotificationWorkload extends Workload {
 				idx++;
 			}
 			statement.addBatch();
-			
+
 			statement.executeBatch();
 			dbConn.commit();
 		} catch (SQLException e) {
@@ -142,11 +130,6 @@ public class SmartNotificationWorkload extends Workload {
 		} catch (InvalidDistribution e) {
 			e.printStackTrace();
 		}
-                        
-	}
-
-	@Override
-	public void run(Connection dbConn) throws IOException {
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.DATETIME, false,
 				null, null, null, Distribution.Series));
@@ -154,41 +137,38 @@ public class SmartNotificationWorkload extends Workload {
 				6500, null, Distribution.Random));
 		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, "resources/areas.txt", Distribution.Random));
-		connection = dbConn;
-		String load = "CREATE TABLE POSITION_SNAPSHOT (";
-		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
-			load += column.getKey() + " " + column.getValue().getType();
-			if (column.getValue().getType() == DataType.INT
-					|| column.getValue().getType() == DataType.NUMBER) {
-				load += ", ";
-			} else {
-				load += "(255), ";
-			}
-		}
-		load = load.substring(0, load.lastIndexOf(','));
-		load += ")";
+		load = queryGen.getCreateQuery("POSITION_SNAPSHOT", schema);
+
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(load);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+
+	}
+
+	@Override
+	public void run(Connection dbConn) throws IOException {
+		connection = dbConn;
+
 		Runnable runnable = new Runnable() {
 			public void run() {
-                            try{
-                                if(connection!=null && !connection.isClosed())
-                                    readData();
-                            } catch (SQLException e) {
-                                System.out.println("closed");
-                            }
-                            
+				try {
+					if (connection != null && !connection.isClosed())
+						readData();
+				} catch (SQLException e) {
+					System.out.println("closed");
+				}
+
 			}
 		};
-		ScheduledFuture<?> runHandle = scheduler.scheduleAtFixedRate(runnable, 0, 10, TimeUnit.SECONDS);
+		ScheduledFuture<?> runHandle = scheduler.scheduleAtFixedRate(runnable,
+				0, 10, TimeUnit.SECONDS);
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
-                        //readData();
+			// readData();
 			try {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
@@ -236,26 +216,23 @@ public class SmartNotificationWorkload extends Workload {
 	}
 
 	public void readData() {
-                System.out.println("here");
-		String query =  
-                                " SELECT C.AREA_ID, B.ATTENDEE_ID  " +
-				" FROM AUTHORIZED_USER A, REGISTERED_USERS B," +
-				" POSITION_SNAPSHOT C " +
-				" WHERE A.INTEREST = B.INTEREST" +
-				" AND B.ATTENDEE_ID = C.TAG_ID " +
-                                " GROUP BY B.ATTENDEE_ID  " +
-                                " HAVING C.TIMESTAMP =  ( " +
-                                " SELECT MAX(TIMESTAMP) " +
-                                " FROM POSITION_SNAPSHOT " + 
-                                " WHERE TAG_ID=B.ATTENDEE_ID)";
+		System.out.println("here");
+		String query = " SELECT C.AREA_ID, B.ATTENDEE_ID  "
+				+ " FROM AUTHORIZED_USER A, REGISTERED_USERS B,"
+				+ " POSITION_SNAPSHOT C " + " WHERE A.INTEREST = B.INTEREST"
+				+ " AND B.ATTENDEE_ID = C.TAG_ID "
+				+ " GROUP BY B.ATTENDEE_ID  " + " HAVING C.TIMESTAMP =  ( "
+				+ " SELECT MAX(TIMESTAMP) " + " FROM POSITION_SNAPSHOT "
+				+ " WHERE TAG_ID=B.ATTENDEE_ID)";
 		try {
 			PreparedStatement statement = connection.prepareStatement(query);
 			java.util.Date now = new java.util.Date();
-			
+
 			ResultSet result = statement.executeQuery();
 			while (result.next())
-                            
-                            System.out.println(result.getString(1)+" "+result.getInt(2));
+
+				System.out
+						.println(result.getString(1) + " " + result.getInt(2));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
