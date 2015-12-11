@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.naming.OperationNotSupportedException;
 
@@ -23,6 +22,7 @@ import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.Distribution;
 import edu.buffalo.itembench.generators.InvalidDistribution;
 import edu.buffalo.itembench.generators.client.DataGenerator;
+import edu.buffalo.itembench.generators.client.QueryGenerator;
 import edu.buffalo.itembench.util.DataType;
 import edu.buffalo.itembench.util.Helper;
 import edu.buffalo.itembench.workloads.Workload;
@@ -35,6 +35,7 @@ import edu.buffalo.itembench.workloads.Workload;
 public class AuthenticationWorkload extends Workload {
 
 	private Connection connection;
+	private QueryGenerator queryGen;
 
 	/**
 	 * 
@@ -55,12 +56,8 @@ public class AuthenticationWorkload extends Workload {
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Series));
-		String load = "CREATE TABLE VALID_TAGS (";
-		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
-			load += column.getKey() + " " + column.getValue().getType() + ", ";
-		}
-		load = load.substring(0, load.lastIndexOf(','));
-		load += ")";
+		queryGen = new QueryGenerator();
+		String load = queryGen.getCreateQuery("VALID_TAGS", schema);
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(load);
@@ -109,10 +106,7 @@ public class AuthenticationWorkload extends Workload {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
 
-	@Override
-	public void run(Connection dbConn) throws IOException {
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, null, Distribution.Series));
@@ -121,18 +115,18 @@ public class AuthenticationWorkload extends Workload {
 		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, "resources/areas.txt", Distribution.Random));
 
-		String load1 = "CREATE TABLE POSITION_SNAPSHOT(";
-		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
-			load1 += column.getKey() + " " + column.getValue().getType() + ", ";
-		}
-		load1 = load1.substring(0, load1.lastIndexOf(','));
-		load1 += ")";
+		load = queryGen.getCreateQuery("POSITION_SNAPSHOT", schema);
 		try {
 			Statement statement = dbConn.createStatement();
-			statement.execute(load1);
+			statement.execute(load);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+
+	}
+
+	@Override
+	public void run(Connection dbConn) throws IOException {
 		connection = dbConn;
 
 		setTotalOps(0);
@@ -142,7 +136,13 @@ public class AuthenticationWorkload extends Workload {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
 				Helper.cpuList.add(nw.getPercent() * 100 / Helper.cpuCount);
+
+				// Insert a 5 second delay to relatively emulate a time where
+				// people are busy attending talks and not moving much
+				Thread.sleep(500);
 			} catch (SigarException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -212,4 +212,3 @@ public class AuthenticationWorkload extends Workload {
 		}
 	}
 }
-
