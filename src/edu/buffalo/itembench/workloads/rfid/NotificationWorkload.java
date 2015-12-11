@@ -165,8 +165,7 @@ public class NotificationWorkload extends Workload {
 
 			}
 		};
-		ScheduledFuture<?> readHandle = scheduler.scheduleAtFixedRate(runnable,
-				(getWriteLoad() / 10), (getReadLoad() / 10), TimeUnit.SECONDS);
+		ScheduledFuture<?> readHandle = scheduler.scheduleWithFixedDelay(runnable, (getWriteLoad() / 10), (getReadLoad() / 10), TimeUnit.SECONDS);
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
