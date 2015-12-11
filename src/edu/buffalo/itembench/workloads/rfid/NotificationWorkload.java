@@ -74,7 +74,7 @@ public class NotificationWorkload extends Workload {
 				null, Distribution.Series));
 		schema2.put("TITLE", new ColumnDescriptor(DataType.VARCHAR, true, null,
 				null, null, Distribution.Random));
-		schema2.put("TIME", new ColumnDescriptor(DataType.DATETIME, false,
+		schema2.put("TIME", new ColumnDescriptor(DataType.TIMESTAMP, false,
 				null, null, null, Distribution.Series));
 		schema2.put("TRACK", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, "resources/areas.txt", Distribution.Series));
@@ -190,7 +190,7 @@ public class NotificationWorkload extends Workload {
 			DataGenerator generator = new DataGenerator();
 			generator.setSchema(schema);
 			List<Object> row;
-			int insertLimit = getWriteLoad() * 300;
+			int insertLimit = getWriteLoad() * 100;
 			setTotalOps(getTotalOps() + insertLimit);
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
@@ -217,15 +217,31 @@ public class NotificationWorkload extends Workload {
 	}
 
 	public void readData() {
-		String query = "WITH T AS (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?), "
-				+ "P AS (SELECT MAX(TIMESTAMP), TAG_ID, AREA FROM POSITION_SNAPSHOT GROUP BY TAG_ID)"
+
+		//		String query = "WITH T AS (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?), "
+		//				+ "P AS (SELECT B.TAG_ID, B.AREA FROM (SELECT MAX(TIMESTAMP) AS LATEST, TAG_ID FROM POSITION_SNAPSHOT GROUP BY TAG_ID) A, POSITION_SNAPSHOT B WHERE A.TAG_ID = B.TAG_ID AND A.LATEST = B.TIMESTAMP)"
+		//				+ "SELECT L.HACKER_ID, L.TALK_ID "
+		//				+ "FROM TALK_LIST L, T "
+		//				+ "WHERE L.TALK_ID = T.TALK_ID "
+		//				+ "AND NOT EXISTS "
+		//				+ "(SELECT * FROM P, T "
+		//				+ "WHERE P.AREA = T.TRACK "
+		//				+ "AND TAG_ID = L.HACKER_ID " + "AND T.TALK_ID = L.TALK_ID)";
+		
+		String query = ""
 				+ "SELECT L.HACKER_ID, L.TALK_ID "
-				+ "FROM TALK_LIST L, T "
+				+ "FROM TALK_LIST L, (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?) T "
 				+ "WHERE L.TALK_ID = T.TALK_ID "
 				+ "AND NOT EXISTS "
-				+ "(SELECT * FROM P, T "
-				+ "WHERE P.AREA = T.TRACK "
-				+ "AND TAG_ID = L.HACKER_ID " + "AND T.TALK_ID = L.TALK_ID)";
+				+ "(SELECT * FROM (SELECT B.TAG_ID, B.AREA FROM (SELECT MAX(TIMESTAMP) AS LATEST, TAG_ID FROM POSITION_SNAPSHOT GROUP BY TAG_ID) A, POSITION_SNAPSHOT B WHERE A.TAG_ID = B.TAG_ID AND A.LATEST = B.TIMESTAMP) R, (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?) T "
+				+ "WHERE R.AREA = T.TRACK "
+				+ "AND R.TAG_ID = L.HACKER_ID " + "AND T.TALK_ID = L.TALK_ID)";
+		
+		//		String query = "WITH T AS (SELECT * FROM TALKS WHERE TIME BETWEEN ? AND ?), P AS (SELECT B.TAG_ID, B.AREA FROM (SELECT MAX(TIMESTAMP) AS LATEST, TAG_ID FROM POSITION_SNAPSHOT GROUP BY TAG_ID) A, POSITION_SNAPSHOT B WHERE A.TAG_ID = B.TAG_ID AND A.LATEST = B.TIMESTAMP)"+
+		//		"SELECT L.HACKER_ID, L.TALK_ID FROM TALK_LIST L, T WHERE L.TALK_ID = T.TALK_ID AND NOT EXISTS (SELECT * FROM P, T WHERE P.AREA = T.TRACK AND TAG_ID = L.HACKER_ID AND T.TALK_ID = L.TALK_ID)";
+
+		//		String query = "SELECT * FROM (SELECT MAX(TIMESTAMP) AS LATEST, TAG_ID FROM POSITION_SNAPSHOT GROUP BY TAG_ID) A, POSITION_SNAPSHOT B WHERE A.TAG_ID = B.TAG_ID";
+		
 		// String query = "SELECT A.HACKER_ID, A.TALK_ID " +
 		// " FROM TALK_LIST A, TALKS B," +
 		// " POSITION_SNAPSHOT C " +
@@ -240,9 +256,12 @@ public class NotificationWorkload extends Workload {
 			statement.setDate(1, new Date(now.getTime()));
 			statement.setDate(2, new Date(DateUtils.addMinutes(now, 5)
 					.getTime()));
+			statement.setDate(3, new Date(now.getTime()));
+			statement.setDate(4, new Date(DateUtils.addMinutes(now, 5)
+					.getTime()));
 			ResultSet result = statement.executeQuery();
 			while (result.next()) {
-				System.out.println(result.getInt(1));
+//				System.out.println(result.getInt(1));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -131,7 +131,7 @@ public class SmartNotificationWorkload extends Workload {
 			e.printStackTrace();
 		}
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
-		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.DATETIME, false,
+		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.TIMESTAMP, false,
 				null, null, null, Distribution.Series));
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Random));
@@ -216,23 +216,32 @@ public class SmartNotificationWorkload extends Workload {
 	}
 
 	public void readData() {
-		System.out.println("here");
+//		System.out.println("here");
+//		String query = " SELECT C.AREA_ID, B.ATTENDEE_ID  "
+//				+ " FROM AUTHORIZED_USER A, REGISTERED_USERS B,"
+//				+ " POSITION_SNAPSHOT C " + " WHERE A.INTEREST = B.INTEREST"
+//				+ " AND B.ATTENDEE_ID = C.TAG_ID "
+//				+ " GROUP BY B.ATTENDEE_ID, C.AREA_ID  " + " WHERE C.TIMESTAMP =  ( "
+//				+ " SELECT MAX(TIMESTAMP) " + " FROM POSITION_SNAPSHOT "
+//				+ " WHERE TAG_ID=B.ATTENDEE_ID)";
 		String query = " SELECT C.AREA_ID, B.ATTENDEE_ID  "
 				+ " FROM AUTHORIZED_USER A, REGISTERED_USERS B,"
 				+ " POSITION_SNAPSHOT C " + " WHERE A.INTEREST = B.INTEREST"
 				+ " AND B.ATTENDEE_ID = C.TAG_ID "
-				+ " GROUP BY B.ATTENDEE_ID  " + " HAVING C.TIMESTAMP =  ( "
+				+ "AND C.TIMESTAMP =  ( "
 				+ " SELECT MAX(TIMESTAMP) " + " FROM POSITION_SNAPSHOT "
-				+ " WHERE TAG_ID=B.ATTENDEE_ID)";
+				+ " WHERE TAG_ID=B.ATTENDEE_ID)" 
+				+ " GROUP BY B.ATTENDEE_ID, C.AREA_ID  ";
 		try {
 			PreparedStatement statement = connection.prepareStatement(query);
 			java.util.Date now = new java.util.Date();
 
 			ResultSet result = statement.executeQuery();
-			while (result.next())
+			while (result.next()){
+//				System.out.println(result.getString(1) + " " + result.getInt(2));
+			}
 
-				System.out
-						.println(result.getString(1) + " " + result.getInt(2));
+				
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
