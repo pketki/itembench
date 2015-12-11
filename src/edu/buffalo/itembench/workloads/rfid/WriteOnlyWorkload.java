@@ -1,6 +1,7 @@
 /**
- * Workload to emulate read-only applications 
- * like an authenticating RFID or local cache 
+ * A 100% write workload which acts like a logger 
+ * and records the position snapshot at a given
+ * time for each hacker present in the conference
  */
 package edu.buffalo.itembench.workloads.rfid;
 
@@ -12,7 +13,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.naming.OperationNotSupportedException;
 
@@ -23,13 +23,13 @@ import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.Distribution;
 import edu.buffalo.itembench.generators.InvalidDistribution;
 import edu.buffalo.itembench.generators.client.DataGenerator;
+import edu.buffalo.itembench.generators.client.QueryGenerator;
 import edu.buffalo.itembench.util.DataType;
 import edu.buffalo.itembench.util.Helper;
 import edu.buffalo.itembench.workloads.Workload;
 
 /**
  * @author pketki
- *
  */
 public class WriteOnlyWorkload extends Workload {
 
@@ -37,11 +37,10 @@ public class WriteOnlyWorkload extends Workload {
 	private String query;
 	private Connection connection;
 
-	/**
-	 * 
-	 */
 	public WriteOnlyWorkload() {
+
 		this.setWriteLoad(100);
+
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
 		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, null, Distribution.Series));
@@ -63,25 +62,14 @@ public class WriteOnlyWorkload extends Workload {
 	@Override
 	public void init(Connection dbConn) {
 		connection = dbConn;
-		load = "CREATE TABLE POSITION_SNAPSHOT (";
-		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
-			load += column.getKey() + " " + column.getValue().getType();
-			if (column.getValue().getType() == DataType.INT
-					|| column.getValue().getType() == DataType.NUMBER) {
-				load += ", ";
-			} else {
-				load += "(255), ";
-			}
-		}
-		load = load.substring(0, load.lastIndexOf(','));
-		load += ")";
+		QueryGenerator queryGen = new QueryGenerator();
+		load = queryGen.getCreateQuery("POSITION_SNAPSHOT", schema);
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(load);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	@Override
@@ -94,7 +82,11 @@ public class WriteOnlyWorkload extends Workload {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
 				Helper.cpuList.add(nw.getPercent() * 100 / Helper.cpuCount);
+
+				// Insert a 5 second delay to relatively emulate a time where
+				// people are busy attending talks and not moving much
 				Thread.sleep(500);
+
 			} catch (SigarException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e) {
@@ -111,7 +103,7 @@ public class WriteOnlyWorkload extends Workload {
 			DataGenerator generator = new DataGenerator();
 			generator.setSchema(schema);
 			List<Object> row;
-			int insertLimit = getWriteLoad() * 300;
+			int insertLimit = getWriteLoad() * 3000;
 			setTotalOps(getTotalOps() + insertLimit);
 			for (int i = 0; i < insertLimit; i++) {
 				row = generator.getRow();
