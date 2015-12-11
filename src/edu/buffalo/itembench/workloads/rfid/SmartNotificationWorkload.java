@@ -64,7 +64,7 @@ public class SmartNotificationWorkload extends Workload {
 		schema1.put("ATTENDEE_ID", new ColumnDescriptor(DataType.INT, false,
 				3000, 6500, null, Distribution.Random));
 		schema1.put("INTEREST", new ColumnDescriptor(DataType.VARCHAR, false,
-				null, null, "resources/interests.txt", Distribution.Series));
+				null, null, "resources/interests.txt", Distribution.Random));
 
 		String load = queryGen.getCreateQuery("AUTHORIZED_USER", schema1);
 
@@ -163,8 +163,8 @@ public class SmartNotificationWorkload extends Workload {
 
 			}
 		};
-		ScheduledFuture<?> runHandle = scheduler.scheduleAtFixedRate(runnable,
-				0, 10, TimeUnit.SECONDS);
+		ScheduledFuture<?> readHandle = scheduler.scheduleAtFixedRate(runnable,
+				(getWriteLoad() / 10), (getReadLoad() / 10), TimeUnit.SECONDS);
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
@@ -178,7 +178,7 @@ public class SmartNotificationWorkload extends Workload {
 				e.printStackTrace();
 			}
 		}
-		runHandle.cancel(true);
+		readHandle.cancel(true);
 	}
 
 	private void writeData() {
@@ -216,6 +216,7 @@ public class SmartNotificationWorkload extends Workload {
 	}
 
 	public void readData() {
+
 //		System.out.println("here");
 //		String query = " SELECT C.AREA_ID, B.ATTENDEE_ID  "
 //				+ " FROM AUTHORIZED_USER A, REGISTERED_USERS B,"
@@ -224,6 +225,7 @@ public class SmartNotificationWorkload extends Workload {
 //				+ " GROUP BY B.ATTENDEE_ID, C.AREA_ID  " + " WHERE C.TIMESTAMP =  ( "
 //				+ " SELECT MAX(TIMESTAMP) " + " FROM POSITION_SNAPSHOT "
 //				+ " WHERE TAG_ID=B.ATTENDEE_ID)";
+
 		String query = " SELECT C.AREA_ID, B.ATTENDEE_ID  "
 				+ " FROM AUTHORIZED_USER A, REGISTERED_USERS B,"
 				+ " POSITION_SNAPSHOT C " + " WHERE A.INTEREST = B.INTEREST"
@@ -241,7 +243,6 @@ public class SmartNotificationWorkload extends Workload {
 //				System.out.println(result.getString(1) + " " + result.getInt(2));
 			}
 
-				
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

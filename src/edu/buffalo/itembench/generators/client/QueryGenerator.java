@@ -36,4 +36,18 @@ public class QueryGenerator {
 		query.append(")");
 		return query.toString();
 	}
+
+	public String getInsertQuery(String tableName,
+			Map<String, ColumnDescriptor> schema) {
+		StringBuilder query = new StringBuilder();
+		query.append("INSERT INTO ");
+		query.append(tableName);
+		query.append(" VALUES (");
+		for (int i = 0; i < schema.size(); i++) {
+			query.append("?,");
+		}
+		query.deleteCharAt(query.lastIndexOf(","));
+		query.append(")");
+		return query.toString();
+	}
 }

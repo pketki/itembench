@@ -30,10 +30,11 @@ public class Runner {
                     
 			dbConn = new DbConnector();
 			SimpleTest test = new SimpleTest(dbConn);
-                        
+
 //			Workload workload = new WriteOnlyWorkload();
 //			Workload workload = new SmartNotificationWorkload();//AuthenticationWorkload();
 			Workload workload = new NotificationWorkload();
+
                         
 			 for (int i = 0; i < 3; i++) {
 				test.run(workload);
