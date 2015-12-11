@@ -69,12 +69,12 @@ public class SmartNotificationWorkload extends Workload {
 		String load = queryGen.getCreateQuery("AUTHORIZED_USER", schema1);
 
 		Map<String, ColumnDescriptor> schema2 = new LinkedHashMap<String, ColumnDescriptor>();
-		schema2.put("ATTENDEE_ID", new ColumnDescriptor(DataType.INT, true,
-				3000, 6500, null, Distribution.Random));
+		schema2.put("HACKER_ID", new ColumnDescriptor(DataType.INT, true, 3000,
+				6500, null, Distribution.Random));
 		schema2.put("INTEREST", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, "resources/interests.txt", Distribution.Random));
 
-		String load1 = queryGen.getCreateQuery("REGISTERED_USERS", schema2);
+		String load1 = queryGen.getCreateQuery("INTEREST_LIST", schema2);
 
 		try {
 			Statement statement = dbConn.createStatement();
@@ -84,7 +84,7 @@ public class SmartNotificationWorkload extends Workload {
 			e.printStackTrace();
 		}
 		String query = "INSERT INTO AUTHORIZED_USER VALUES(?,?)";
-		String query1 = "INSERT INTO REGISTERED_USERS VALUES(?,?)";
+		String query1 = "INSERT INTO INTEREST_LIST VALUES(?,?)";
 
 		try {
 			dbConn.setAutoCommit(false);
@@ -135,8 +135,8 @@ public class SmartNotificationWorkload extends Workload {
 				null, null, null, Distribution.Series));
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Random));
-		schema.put("AREA_ID", new ColumnDescriptor(DataType.VARCHAR, false,
-				null, null, "resources/areas.txt", Distribution.Random));
+		schema.put("AREA", new ColumnDescriptor(DataType.VARCHAR, false, null,
+				null, "resources/areas.txt", Distribution.Random));
 		load = queryGen.getCreateQuery("POSITION_SNAPSHOT", schema);
 
 		try {
@@ -217,22 +217,22 @@ public class SmartNotificationWorkload extends Workload {
 
 	public void readData() {
 		System.out.println("here");
-		String query = " SELECT C.AREA_ID, B.ATTENDEE_ID  "
-				+ " FROM AUTHORIZED_USER A, REGISTERED_USERS B,"
-				+ " POSITION_SNAPSHOT C " + " WHERE A.INTEREST = B.INTEREST"
-				+ " AND B.ATTENDEE_ID = C.TAG_ID "
-				+ " GROUP BY B.ATTENDEE_ID  " + " HAVING C.TIMESTAMP =  ( "
-				+ " SELECT MAX(TIMESTAMP) " + " FROM POSITION_SNAPSHOT "
-				+ " WHERE TAG_ID=B.ATTENDEE_ID)";
+		String query = "SELECT INTEREST FROM "
+				+ "(SELECT * FROM POSITION_SNAPSHOT "
+				+ "WHERE AREA = 'Hopper') P, INTEREST_LIST L "
+				+ "WHERE P.TAG_ID = L.HACKER_ID " + "GROUP BY INTEREST "
+				+ "HAVING COUNT(TAG_ID) = (SELECT MAX(CNT) "
+				+ "FROM (SELECT COUNT(TAG_ID) AS CNT, INTEREST "
+				+ "FROM POSITION_SNAPSHOT A, INTEREST_LIST B "
+				+ "WHERE A.TAG_ID = B.HACKER_ID " + "AND A.AREA = 'Hopper' "
+				+ "GROUP BY INTEREST))";
 		try {
 			PreparedStatement statement = connection.prepareStatement(query);
 			java.util.Date now = new java.util.Date();
 
 			ResultSet result = statement.executeQuery();
 			while (result.next())
-
-				System.out
-						.println(result.getString(1) + " " + result.getInt(2));
+				System.out.println(result.getString(1));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -249,7 +249,7 @@ public class SmartNotificationWorkload extends Workload {
 		connection = dbConn;
 		String query1 = "DROP TABLE POSITION_SNAPSHOT";
 		String query2 = "DROP TABLE AUTHORIZED_USER";
-		String query3 = "DROP TABLE REGISTERED_USERS";
+		String query3 = "DROP TABLE INTEREST_LIST";
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(query1);

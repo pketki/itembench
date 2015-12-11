@@ -7,22 +7,15 @@ package edu.buffalo.itembench.workloads.rfid;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedHashMap;
-import java.util.List;
-
-import javax.naming.OperationNotSupportedException;
 
 import org.hyperic.sigar.ProcCpu;
 import org.hyperic.sigar.SigarException;
 
 import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.Distribution;
-import edu.buffalo.itembench.generators.InvalidDistribution;
-import edu.buffalo.itembench.generators.client.DataGenerator;
 import edu.buffalo.itembench.generators.client.QueryGenerator;
 import edu.buffalo.itembench.util.DataType;
 import edu.buffalo.itembench.util.Helper;
@@ -50,15 +43,6 @@ public class WriteOnlyWorkload extends Workload {
 				null, null, "resources/areas.txt", Distribution.Random));
 	}
 
-	/**
-	 * @param readLoad
-	 * @param writeLoad
-	 * @param updateLoad
-	 */
-	public WriteOnlyWorkload(int readLoad, int writeLoad, int updateLoad) {
-		this();
-	}
-
 	@Override
 	public void init(Connection dbConn) {
 		connection = dbConn;
@@ -77,7 +61,7 @@ public class WriteOnlyWorkload extends Workload {
 		connection = dbConn;
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
-			loadData();
+			loadData("POSITION_SNAPSHOT", (getWriteLoad() * 100), schema);
 			try {
 				Helper.memList.add(Helper.sg.getMem().getUsed() / 1024);
 				ProcCpu nw = Helper.sg.getProcCpu(Helper.sg.getPid());
@@ -92,38 +76,6 @@ public class WriteOnlyWorkload extends Workload {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		}
-	}
-
-	private void loadData() throws IOException {
-		query = "INSERT INTO POSITION_SNAPSHOT VALUES (?,?,?)";
-		try {
-			connection.setAutoCommit(false);
-			PreparedStatement statement = connection.prepareStatement(query);
-			DataGenerator generator = new DataGenerator();
-			generator.setSchema(schema);
-			List<Object> row;
-			int insertLimit = getWriteLoad() * 3000;
-			setTotalOps(getTotalOps() + insertLimit);
-			for (int i = 0; i < insertLimit; i++) {
-				row = generator.getRow();
-				int idx = 1;
-				for (Object value : row) {
-					if (value instanceof Date) {
-						statement.setDate(idx, (Date) value);
-					} else
-						statement.setObject(idx, value);
-					idx++;
-				}
-				statement.execute();
-			}
-			connection.commit();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} catch (OperationNotSupportedException e) {
-			e.printStackTrace();
-		} catch (InvalidDistribution e) {
-			e.printStackTrace();
 		}
 	}
 
