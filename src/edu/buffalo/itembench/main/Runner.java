@@ -11,7 +11,9 @@ import edu.buffalo.itembench.workloads.Workload;
 import edu.buffalo.itembench.workloads.ragnarok_rfid.RagNotificationWorkload;
 import edu.buffalo.itembench.workloads.ragnarok_rfid.RagSmartNotificationWorkload;
 import edu.buffalo.itembench.workloads.ragnarok_rfid.RagWriteOnlyWorkload;
+import edu.buffalo.itembench.workloads.rfid.NotificationWorkload;
 import edu.buffalo.itembench.workloads.rfid.SmartNotificationWorkload;
+import edu.buffalo.itembench.workloads.rfid.WriteOnlyWorkload;
 
 /**
  * @author pketki
@@ -29,8 +31,9 @@ public class Runner {
 			dbConn = new DbConnector();
 			SimpleTest test = new SimpleTest(dbConn);
                         
-			//Workload workload = new WriteOnlyWorkload();
-			Workload workload = new SmartNotificationWorkload();//AuthenticationWorkload();
+//			Workload workload = new WriteOnlyWorkload();
+//			Workload workload = new SmartNotificationWorkload();//AuthenticationWorkload();
+			Workload workload = new NotificationWorkload();
                         
 			 for (int i = 0; i < 3; i++) {
 				test.run(workload);
