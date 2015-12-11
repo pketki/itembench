@@ -13,7 +13,6 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -29,6 +28,7 @@ import edu.buffalo.itembench.db.ColumnDescriptor;
 import edu.buffalo.itembench.generators.Distribution;
 import edu.buffalo.itembench.generators.InvalidDistribution;
 import edu.buffalo.itembench.generators.client.DataGenerator;
+import edu.buffalo.itembench.generators.client.QueryGenerator;
 import edu.buffalo.itembench.util.DataType;
 import edu.buffalo.itembench.util.Helper;
 import edu.buffalo.itembench.workloads.Workload;
@@ -58,17 +58,16 @@ public class NotificationWorkload extends Workload {
 	 */
 	@Override
 	public void init(Connection dbConn) {
+
+		QueryGenerator queryGen = new QueryGenerator();
+
 		Map<String, ColumnDescriptor> schema1 = new LinkedHashMap<String, ColumnDescriptor>();
 		schema1.put("HACKER_ID", new ColumnDescriptor(DataType.INT, false,
 				3000, 6500, null, Distribution.Random));
 		schema1.put("TALK_ID", new ColumnDescriptor(DataType.INT, false, 1,
 				100, null, Distribution.Zipfian));
-		String load = "CREATE TABLE TALK_LIST (";
-		for (Entry<String, ColumnDescriptor> column : schema1.entrySet()) {
-			load += column.getKey() + " " + column.getValue().getType() + ", ";
-		}
-		load = load.substring(0, load.lastIndexOf(','));
-		load += ")";
+
+		String load = queryGen.getCreateQuery("TALK_LIST", schema1);
 
 		Map<String, ColumnDescriptor> schema2 = new LinkedHashMap<String, ColumnDescriptor>();
 		schema2.put("TALK_ID", new ColumnDescriptor(DataType.INT, true, 1, 100,
@@ -80,12 +79,7 @@ public class NotificationWorkload extends Workload {
 		schema2.put("TRACK", new ColumnDescriptor(DataType.VARCHAR, false,
 				null, null, "resources/areas.txt", Distribution.Series));
 
-		String load1 = "CREATE TABLE TALKS (";
-		for (Entry<String, ColumnDescriptor> column : schema2.entrySet()) {
-			load1 += column.getKey() + " " + column.getValue().getType() + ", ";
-		}
-		load1 = load1.substring(0, load1.lastIndexOf(','));
-		load1 += ")";
+		String load1 = queryGen.getCreateQuery("TALKS", schema1);
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(load);
@@ -93,6 +87,7 @@ public class NotificationWorkload extends Workload {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+
 		String query = "INSERT INTO TALK_LIST VALUES(?,?)";
 		String query1 = "INSERT INTO TALKS VALUES(?,?,?,?)";
 
@@ -148,18 +143,7 @@ public class NotificationWorkload extends Workload {
 		schema.put("AREA", new ColumnDescriptor(DataType.VARCHAR, false, null,
 				null, "resources/areas.txt", Distribution.Random));
 		connection = dbConn;
-		load = "CREATE TABLE POSITION_SNAPSHOT (";
-		for (Entry<String, ColumnDescriptor> column : schema.entrySet()) {
-			load += column.getKey() + " " + column.getValue().getType();
-			if (column.getValue().getType() == DataType.INT
-					|| column.getValue().getType() == DataType.NUMBER) {
-				load += ", ";
-			} else {
-				load += "(255), ";
-			}
-		}
-		load = load.substring(0, load.lastIndexOf(','));
-		load += ")";
+		load = queryGen.getCreateQuery("POSITION_SNAPSHOT", schema);
 		try {
 			Statement statement = dbConn.createStatement();
 			statement.execute(load);
@@ -182,7 +166,7 @@ public class NotificationWorkload extends Workload {
 			}
 		};
 		ScheduledFuture<?> readHandle = scheduler.scheduleAtFixedRate(runnable,
-				10, 20, TimeUnit.SECONDS);
+				(getWriteLoad() / 10), (getReadLoad() / 10), TimeUnit.SECONDS);
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
