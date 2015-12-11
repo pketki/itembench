@@ -69,7 +69,7 @@ public class WriteOnlyWorkload extends Workload {
 
 				// Insert a 5 second delay to relatively emulate a time where
 				// people are busy attending talks and not moving much
-				Thread.sleep(500);
+				Thread.sleep(5000);
 
 			} catch (SigarException e) {
 				e.printStackTrace();

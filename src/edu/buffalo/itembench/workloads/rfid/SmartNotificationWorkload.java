@@ -64,7 +64,7 @@ public class SmartNotificationWorkload extends Workload {
 		schema1.put("ATTENDEE_ID", new ColumnDescriptor(DataType.INT, false,
 				3000, 6500, null, Distribution.Random));
 		schema1.put("INTEREST", new ColumnDescriptor(DataType.VARCHAR, false,
-				null, null, "resources/interests.txt", Distribution.Series));
+				null, null, "resources/interests.txt", Distribution.Random));
 
 		String load = queryGen.getCreateQuery("AUTHORIZED_USER", schema1);
 
@@ -131,7 +131,7 @@ public class SmartNotificationWorkload extends Workload {
 			e.printStackTrace();
 		}
 		schema = new LinkedHashMap<String, ColumnDescriptor>();
-		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.DATETIME, false,
+		schema.put("TIMESTAMP", new ColumnDescriptor(DataType.TIMESTAMP, false,
 				null, null, null, Distribution.Series));
 		schema.put("TAG_ID", new ColumnDescriptor(DataType.INT, false, 3000,
 				6500, null, Distribution.Random));
@@ -163,8 +163,8 @@ public class SmartNotificationWorkload extends Workload {
 
 			}
 		};
-		ScheduledFuture<?> runHandle = scheduler.scheduleAtFixedRate(runnable,
-				0, 10, TimeUnit.SECONDS);
+		ScheduledFuture<?> readHandle = scheduler.scheduleAtFixedRate(runnable,
+				(getWriteLoad() / 10), (getReadLoad() / 10), TimeUnit.SECONDS);
 		setTotalOps(0);
 		for (int i = 0; i < 5; i++) {
 			writeData();
@@ -178,7 +178,7 @@ public class SmartNotificationWorkload extends Workload {
 				e.printStackTrace();
 			}
 		}
-		runHandle.cancel(true);
+		readHandle.cancel(true);
 	}
 
 	private void writeData() {
